@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 # Oppgave 1 c)
 
 alpha = 0.8
-tol = 1e-7
-y_init = np.array([0, 2])  # Initial conditions: y(0) = 0, y'(0) = 1
+tol = 1e-3
+y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
 h0 = 0.1
 
 def f(x, y):
-    y_1, y_2 = y
+    y_1 = np.sin(2*x)
+    y_2 = 2 * np.cos(2*x)
     dy = [y_2, -4*y_1]
-    return np.array(dy)
-
+    return np.array(dy), y
 
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
@@ -44,8 +44,8 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
             y_n = y_n1
             k1 = k4
 
-            Xa.append(x_n)
-            Ya.append(y_n.copy())
+            X.append(x_n)
+            Y.append(y_n.copy())
             n_accept += 1
 
         else:
@@ -53,7 +53,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
 
         # oppdater steglengde
         if est == 0:
-            h = 2*h
+            h = 2*h 
         else:
             h = alpha * h * (tol / est)**(1/3)
             
@@ -63,16 +63,24 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
             'final_step_size': h
         }
 
-    return X, Y, H, stats
+    return X, Y, H , stats
 
 X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
 
 # Plotting y(x) and y'(x)
-x = np.linspace(x_init, x_end, 100)
-plt.plot(x, H)
+plt.plot(X, Y[:, 0], label='y(x)')
+plt.plot(X, Y[:, 1], label="y'(x)")
 plt.xlabel('x')
-plt.ylabel('Step length (h)')
-plt.title('Step length as a function of x')
+plt.ylabel('y(x)')
+plt.title('y(x) and y\'(x) as function of x')
 plt.grid()
+
+# Plotting the step size h
+plt.plot(X, H, label='Step length h')
+plt.xlabel('x')
+plt.ylabel('h')
+plt.title('Step length varies as a function of x')
+plt.grid()  
 plt.show()
+
 
