@@ -15,8 +15,6 @@ def f(x, y):
     dy = [y_2, -4*y_1]
     return np.array(dy)
 
-
-
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     x_n = x_init
     y_n = y_init
@@ -44,8 +42,8 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
             y_n = y_n1
             k1 = k4
 
-            Xa.append(x_n)
-            Ya.append(y_n.copy())
+            X.append(x_n)
+            Y.append(y_n.copy())
             n_accept += 1
 
         else:
@@ -65,17 +63,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
 
     return X, Y, H, stats
 
-X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
-
-# Plotting y(x) and y'(x)
-x = np.linspace(x_init, x_end, 100)
-plt.plot(x, H)
-plt.xlabel('x')
-plt.ylabel('Step length (h)')
-plt.title('Step length as a function of x')
-plt.grid()
-plt.show()
-
+# Oppgave 1e
 def root_finder(func, guess1:float, guess2:float, tol:float):
     '''
     Finds the approximate root of a function using the secant method.
