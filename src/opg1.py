@@ -67,6 +67,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
 
 X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
 
+"""
 # Plotting y(x) and y'(x)
 x = np.linspace(x_init, x_end, 100)
 plt.plot(x, H)
@@ -75,4 +76,31 @@ plt.ylabel('Step length (h)')
 plt.title('Step length as a function of x')
 plt.grid()
 plt.show()
+"""
 
+#Exercise 1 d) 
+
+tol_array = np.linspace(1e-8,1e-6,3)
+for i,tol in enumerate(tol_array()):
+    X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+    Err = abs(np.sin(2*X) - Y)
+    plt.plot(X, Err, label = f"tol = {tol}")
+plt.legend()
+plt.title("Error for different tolerances")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
+
+tol = 1e-7  
+
+alpha_array = np.linspace(0.5,0.9,10)
+step_array = np.zeros(len(alpha_array))
+for i, alpha in enumerate(alpha_array()):
+    X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+    step_array[i] = len(X)
+
+plt.plot(alpha_array, step_array)
+plt.title("Number of time steps as a function of alpha")
+plt.xlabel("alpha")
+plt.ylabel("number of time steps")
+plt.show()
