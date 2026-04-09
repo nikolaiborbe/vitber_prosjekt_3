@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+'''
 # Oppgave 1c)
 def f(x, y):
     y_1 = np.sin(2*x)
@@ -100,36 +100,48 @@ ax2.grid()
 ax2.legend() 
 
 plt.show()
+'''
 
-"""
 
 # Oppgave 1e
-def root_finder(func, guess1:float, guess2:float, tol:float):
+def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6):
     '''
     Finds the approximate root of a function using the secant method.
     Parameters:
         func: A scalar function whose root is to be found
         guess: Initial guesses for the root
         tol: The difference between the current and last iteration. A lower number corresponds to a higher precision.
+        params (optional): Extra arguments to be passed to the function.
+        max_iter: Maximum amount of iteration, prevents infinite while loop.
     Returns:
         The root of the function
     '''
+
     z_0, z_1 = guess1, guess2
-    g_0, g_1 = func(z_0), func(z_1)
+    g_0, g_1 = func(z_0, *params), func(z_1, *params)
 
     diff = 1000
-    while diff >= tol:
+    iterations = 0
+    while (diff >= tol):
         z_new = (z_0*g_1 - z_1*g_0)/(g_1 - g_0)     # The secant method
         diff = np.abs(z_new-z_1)
 
         # Update the parameters
         z_0 = z_1
         z_1 = z_new
-        g_0, g_1 = func(z_0), func(z_1)
+        g_0, g_1 = func(z_0, *params), func(z_1, *params)
+
+        iterations += 1
+        if iterations > max_iter:
+            print('Max iterations exceeded')
+            return None
 
     return z_1
 
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
-"""
+def h(x, y, z):
+    return np.sin(x+y+z)
+
+print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
