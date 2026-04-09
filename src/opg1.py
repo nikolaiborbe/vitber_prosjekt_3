@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 # Oppgave 1 c)
 
 alpha = 0.8
-tol = 1e-3
+tol = 1e-7
 y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
-h0 = 0.1
+h0 = 0.005
 
 def f(x, y):
     y_1 = np.sin(2*x)
@@ -75,8 +75,8 @@ ax2 = fig.add_subplot(122)
 ax1.plot(X, Y[:, 0], label='y(x)')
 ax1.plot(X, Y[:, 1], label="y'(x)")
 ax1.set_xlabel('x')
-ax1.set_ylabel('y(x)')
 ax1.set_title('y(x) and y\'(x) as function of x')
+ax1.vlines(np.arange(0, 2 * np.pi + np.pi / 2, np.pi / 2), ymin=-2, ymax=2, colors='r', linestyles='dashed', label='x = n * pi/2')
 ax1.grid()
 ax1.legend()
 
@@ -85,14 +85,13 @@ ax2.plot(X, H, label='Step length h')
 ax2.set_xlabel('x')
 ax2.set_ylabel('h')
 ax2.set_title('Step length varies as a function of x')
+ax2.vlines(np.arange(0, 2 * np.pi + np.pi / 2, np.pi / 2), ymin=0, ymax=max(H), colors='r', linestyles='dashed', label='x = n * pi/2')
 ax2.grid() 
 ax2.legend() 
 
 plt.show()
 
 
-
-# Oppgave 1 d)
 
 
 
