@@ -26,11 +26,12 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     H = [h0]
     n_accept = 0
     n_reject = 0
-    
+    h = h0
+
     k1 = f(x_n, y_n)
 
     while x_end - x_n > 0:
-        h = min(h0, x_end - x_n)
+        h = min(h, x_end - x_n)
         k2 = f(x_n + h / 2, y_n + h * k1 / 2)
         k3 = f(x_n + 3 * h / 4, y_n + 3 * h * k2 / 4)
         y_n1 = y_n + h * (2 * k1 + 3 * k2 + 4 * k3) / 9
@@ -58,12 +59,13 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     stats = {
         'n_accept': n_accept,
         'n_reject': n_reject,
-        'step_length': h
+        'final_step_length': h
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
 
 X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+
 
 # Plotting y(x) and y'(x)
 fig = plt.figure()
@@ -87,5 +89,11 @@ ax2.grid()
 ax2.legend() 
 
 plt.show()
+
+
+
+# Oppgave 1 d)
+
+
 
 
