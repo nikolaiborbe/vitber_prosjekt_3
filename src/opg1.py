@@ -1,15 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Oppgave 1 c)
-
-alpha = 0.8
-tol = 1e-7
-y_init = np.array([0, 2])
-x_init = 0
-x_end = 2 * np.pi
-h0 = 0.005
-
+# Oppgave 1c)
 def f(x, y):
     y_1 = np.sin(2*x)
     y_2 = 2 * np.cos(2*x)
@@ -63,13 +55,17 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
+""""
+alpha = 0.8
+tol = 1e-3
+y_init = np.array([0, 2])
+x_init = 0
+x_end = 2 * np.pi
+h0 = 0.1
 
 X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
 
 
-
-
-# Plotting y(x) and y'(x)
 fig = plt.figure()
 ax1 = fig.add_subplot(221)
 ax2 = fig.add_subplot(222)
@@ -129,57 +125,78 @@ ax4.grid()
 
 plt.show()
 
-
+"""
 
 # Oppgave 1e
-def root_finder(func, guess1:float, guess2:float, tol:float, params=None):
+def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6):
     '''
     Finds the approximate root of a function using the secant method.
     Parameters:
         func: A scalar function whose root is to be found
         guess: Initial guesses for the root
         tol: The difference between the current and last iteration. A lower number corresponds to a higher precision.
+        params (optional): Extra arguments to be passed to the function.
+        max_iter: Maximum amount of iteration, prevents infinite while loop.
     Returns:
         The root of the function
     '''
 
     z_0, z_1 = guess1, guess2
-    g_0, g_1 = func(z_0, params), func(z_1, params)
+    g_0, g_1 = func(z_0, *params), func(z_1, *params)
 
     diff = 1000
-    while diff >= tol:
+    iterations = 0
+    while (diff >= tol):
         z_new = (z_0*g_1 - z_1*g_0)/(g_1 - g_0)     # The secant method
         diff = np.abs(z_new-z_1)
 
         # Update the parameters
         z_0 = z_1
         z_1 = z_new
-        g_0, g_1 = func(z_0, params), func(z_1, params)
+        g_0, g_1 = func(z_0, *params), func(z_1, *params)
+
+        iterations += 1
+        if iterations > max_iter:
+            print('Max iterations exceeded')
+            return None
 
     return z_1
 
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
-print(root_finder(g,-2, 2, 1e-4))
+def h(x, y, z):
+    return np.sin(x+y+z)
+
+print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
+
 
 
 
 #Exercise 1 f)
 
-def err_as_func_of_b(b,x_init, x_end,y_end, y0, f, h0, tol, alpha):
+alpha = 0.8
+tol = 1e-3
+y_0 = 0
+y_end = 0
+x_init = 0
+x_end = 2 * np.pi
+h0 = 0.1
+
+parameters = (x_init, x_end,y_0, y_end, f, h0, tol, alpha)
+
+def err_as_func_of_b(b,x_init, x_end,y_0, y_end, f, h0, tol, alpha):
     """
     Calculates the error in the endpoint of a function from a referance, 
     with a guess b for the start value of the derivative.
     """
-    y_init = np.array([y0,b])
+    y_init = np.array([y_0,b])
     Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
-    err = abs(Y[len(Y[:,0])-1][0] - y_end)
+    err = abs(Y[-1,0] - y_end)
     return err
 
 def solve_boundary_value_problem():
-    b_true = root_finder(err_as_func_of_b,-2,2,1e-4)
+    b_true = root_finder(err_as_func_of_b,-1,0,1e-6,params=parameters)
     return b_true
 
-
-
+print("Oppgave 1f):",solve_boundary_value_problem())
