@@ -84,6 +84,7 @@ plt.show()
 """
 
 def opg1h():
+    # se ekesempel her: https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_bvp.html
     from scipy.integrate import solve_bvp
 
     def f(x, y: np.ndarray):
