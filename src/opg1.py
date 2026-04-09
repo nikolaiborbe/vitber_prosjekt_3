@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 # Oppgave 1c)
 def f(x, y):
     y_1, y_2 = y
-    dy = [y_2, -4*y_1]
+    dy = [y_2, -4*np.sin(2*x)]
     return np.array(dy)
-
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     x_n = x_init
@@ -140,3 +139,27 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
+def err_as_func_of_b(b, x_init, x_end, y_0, y_end, f, h0, tol, alpha):
+    """
+    Calculates the error in the endpoint of a function from a reference, 
+    with a guess b for the start value of the derivative.
+    """
+    y_init = np.array([y_0, b])
+    Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
+    y_end_approx = Y[-1,0]
+    err = abs(y_end_approx - y_end)
+    return err
+
+alpha = 0.8
+tol = 1e-7
+y_init = np.array([0, 2])
+x_init = 0
+x_end = 2 * np.pi
+y_0 = 0
+y_end = 0
+h0 = 0.1
+
+args = (x_init, x_end, y_0, y_end, f, h0, tol, alpha)
+
+init_b = root_finder(err_as_func_of_b, -10, 10, 1e-5, params = (args), max_iter = 1e6)
+print(init_b)
