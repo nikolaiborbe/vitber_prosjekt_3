@@ -119,3 +119,7 @@ def g(z):
     return z + np.sin(z) + np.cos(z)
 
 print(root_finder(g, -2, 2, 1e-4))
+
+
+
+# exercise 1g
