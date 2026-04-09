@@ -1,14 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Oppgave 1c
+# Oppgave 1c)
 def f(x, y):
-    y_1 = np.sin(2*x)
-    y_2 = 2 * np.cos(2*x)
     y_1 = np.sin(2*x)
     y_2 = 2 * np.cos(2*x)
     dy = [y_2, -4*y_1]
     return np.array(dy)
+
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     x_n = x_init
@@ -19,11 +18,12 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     H = [h0]
     n_accept = 0
     n_reject = 0
-    
+    h = h0
+
     k1 = f(x_n, y_n)
 
     while x_end - x_n > 0:
-        h = min(h0, x_end - x_n)
+        h = min(h, x_end - x_n)
         k2 = f(x_n + h / 2, y_n + h * k1 / 2)
         k3 = f(x_n + 3 * h / 4, y_n + 3 * h * k2 / 4)
         y_n1 = y_n + h * (2 * k1 + 3 * k2 + 4 * k3) / 9
@@ -40,9 +40,6 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
             X.append(x_n)
             Y.append(y_n.copy())
             H.append(h)
-            X.append(x_n)
-            Y.append(y_n.copy())
-            H.append(h)
             n_accept += 1
 
         else:
@@ -54,7 +51,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     stats = {
         'n_accept': n_accept,
         'n_reject': n_reject,
-        'step_length': h
+        'final_step_length': h
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
@@ -67,6 +64,7 @@ x_end = 2 * np.pi
 h0 = 0.1
 
 X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+
 
 # Plotting y(x) and y'(x)
 fig = plt.figure()
@@ -111,10 +109,6 @@ ax2.legend()
 
 plt.show()
 
-
-
-
-
 # Oppgave 1e
 def root_finder(func, guess1:float, guess2:float, tol:float):
     '''
@@ -143,5 +137,3 @@ def root_finder(func, guess1:float, guess2:float, tol:float):
 
 def g(z):
     return z + np.sin(z) + np.cos(z)
-
-print(root_finder(g, -2, 2, 1e-4))
