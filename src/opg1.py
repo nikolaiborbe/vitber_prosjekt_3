@@ -74,7 +74,8 @@ fig = plt.figure()
 ax1 = fig.add_subplot(221)
 ax2 = fig.add_subplot(222)
 
-ax1.plot(X, Y[:, 0], label='y(x)')
+
+ax1.plot(X, Y[:, 0], label=f'y(x), tol={tol}')
 ax1.plot(X, Y[:, 1], label="y'(x)")
 ax1.set_xlabel('x')
 ax1.set_ylabel('y(x)')
@@ -90,19 +91,24 @@ ax2.set_title('Step length varies as a function of x')
 ax2.grid() 
 ax2.legend() 
 
+
+
 #Exercise 1 d) 
 
 ax3 = fig.add_subplot(223)
 
-tol_array = np.linspace(1e-8,1e-6,3)
+tol_array = np.linspace(1e-8,1e-1,100)
+err_array = np.zeros(len(tol_array))
+
 for i,tol in enumerate(tol_array):
     X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
-    Err = abs(np.sin(2*X) - Y[:,0])
-    ax3.plot(X, Err, label = f"tol = {tol}")
+    err_array[i] = np.mean(abs(np.sin(2*X) - Y[:,0]))
+
+ax3.plot(tol_array, err_array)
 ax3.legend()
-ax3.set_title("Error for different tolerances")
-ax3.set_xlabel("x")
-ax3.set_ylabel("y")
+ax3.set_title("Error as a function of tolerances")
+ax3.set_xlabel("Error")
+ax3.set_ylabel("Tol")
 ax3.grid()
 
 tol = 1e-7  
@@ -122,6 +128,8 @@ ax4.set_ylabel("number of time steps")
 ax4.grid()
 
 plt.show()
+
+
 
 # Oppgave 1e
 def root_finder(func, guess1:float, guess2:float, tol:float):
