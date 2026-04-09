@@ -133,3 +133,16 @@ def g(z):
     return z + np.sin(z) + np.cos(z)
 
 print(root_finder(g, -2, 2, 1e-4))
+
+
+#Exercise 1 f)
+
+b = 1
+
+y_init = (0,b)
+
+X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+
+
+
+
