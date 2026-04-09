@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 # Oppgave 1 c)
 
 alpha = 0.8
-tol = 1e-3
+tol = 1e-7
 y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
-h0 = 0.1
+h0 = 0.005
 
 def f(x, y):
     y_1 = np.sin(2*x)
@@ -71,8 +71,8 @@ X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
 
 # Plotting y(x) and y'(x)
 fig = plt.figure()
-ax1 = fig.add_subplot(121)
-ax2 = fig.add_subplot(122)
+ax1 = fig.add_subplot(221)
+ax2 = fig.add_subplot(222)
 
 ax1.plot(X, Y[:, 0], label='y(x)')
 ax1.plot(X, Y[:, 1], label="y'(x)")
@@ -90,22 +90,24 @@ ax2.set_title('Step length varies as a function of x')
 ax2.grid() 
 ax2.legend() 
 
-plt.show()
-
 #Exercise 1 d) 
+
+ax3 = fig.add_subplot(223)
 
 tol_array = np.linspace(1e-8,1e-6,3)
 for i,tol in enumerate(tol_array):
     X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
     Err = abs(np.sin(2*X) - Y[:,0])
-    plt.plot(X, Err, label = f"tol = {tol}")
-plt.legend()
-plt.title("Error for different tolerances")
-plt.xlabel("x")
-plt.ylabel("y")
-plt.show()
+    ax3.plot(X, Err, label = f"tol = {tol}")
+ax3.legend()
+ax3.set_title("Error for different tolerances")
+ax3.set_xlabel("x")
+ax3.set_ylabel("y")
+ax3.grid()
 
 tol = 1e-7  
+
+ax4 = fig.add_subplot(224)
 
 alpha_array = np.linspace(0.5,0.9,10)
 step_array = np.zeros(len(alpha_array))
@@ -113,10 +115,12 @@ for i, alpha in enumerate(alpha_array):
     X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
     step_array[i] = len(X)
 
-plt.plot(alpha_array, step_array)
-plt.title("Number of time steps as a function of alpha")
-plt.xlabel("alpha")
-plt.ylabel("number of time steps")
+ax4.plot(alpha_array, step_array)
+ax4.set_title("Number of time steps as a function of alpha")
+ax4.set_xlabel("alpha")
+ax4.set_ylabel("number of time steps")
+ax4.grid()
+
 plt.show()
 
 # Oppgave 1e
@@ -155,10 +159,10 @@ print(root_finder(g, -2, 2, 1e-4))
 
 b = 1
 
-y_init = (0,b)
-
-X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
-
+for i in range():
+    y_init = (0,b)
+    X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
+    root = root_finder()
 
 
 
