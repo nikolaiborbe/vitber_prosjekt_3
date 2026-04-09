@@ -54,14 +54,14 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
 
     return np.array(X), np.array(Y), np.array(H), stats
 
-X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
-
 alpha = 0.8
 tol = 1e-3
 y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
 h0 = 0.1
+
+X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
 
 # Plotting y(x) and y'(x)
 fig = plt.figure()
