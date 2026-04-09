@@ -106,7 +106,7 @@ for i,tol in enumerate(tol_array):
 
 ax3.plot(tol_array, err_array)
 ax3.legend()
-ax3.set_title("Error as a function of tolerances")
+ax3.set_title("Error as a function of tolerance")
 ax3.set_xlabel("Error")
 ax3.set_ylabel("Tol")
 ax3.grid()
@@ -132,7 +132,7 @@ plt.show()
 
 
 # Oppgave 1e
-def root_finder(func, guess1:float, guess2:float, tol:float):
+def root_finder(func, guess1:float, guess2:float, tol:float, params=None):
     '''
     Finds the approximate root of a function using the secant method.
     Parameters:
@@ -142,8 +142,9 @@ def root_finder(func, guess1:float, guess2:float, tol:float):
     Returns:
         The root of the function
     '''
+
     z_0, z_1 = guess1, guess2
-    g_0, g_1 = func(z_0), func(z_1)
+    g_0, g_1 = func(z_0, params), func(z_1, params)
 
     diff = 1000
     while diff >= tol:
@@ -153,24 +154,32 @@ def root_finder(func, guess1:float, guess2:float, tol:float):
         # Update the parameters
         z_0 = z_1
         z_1 = z_new
-        g_0, g_1 = func(z_0), func(z_1)
+        g_0, g_1 = func(z_0, params), func(z_1, params)
 
     return z_1
 
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
-print(root_finder(g, -2, 2, 1e-4))
+print(root_finder(g,-2, 2, 1e-4))
+
 
 
 #Exercise 1 f)
 
-b = 1
+def err_as_func_of_b(b,x_init, x_end,y_end, y0, f, h0, tol, alpha):
+    """
+    Calculates the error in the endpoint of a function from a referance, 
+    with a guess b for the start value of the derivative.
+    """
+    y_init = np.array([y0,b])
+    Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
+    err = abs(Y[len(Y[:,0])-1][0] - y_end)
+    return err
 
-for i in range():
-    y_init = (0,b)
-    X, Y, H, stats = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)
-    root = root_finder()
+def solve_boundary_value_problem():
+    b_true = root_finder(err_as_func_of_b,-2,2,1e-4)
+    return b_true
 
 
 
