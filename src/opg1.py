@@ -79,14 +79,6 @@ ax1.set_title('y(x) and y\'(x) as function of x')
 ax1.grid()
 ax1.legend()
 
-# Plotting the step size h
-ax2.plot(X, H, label='Step length h')
-ax2.set_xlabel('x')
-ax2.set_ylabel('h')
-ax2.set_title('Step length varies as a function of x')
-ax2.grid() 
-ax2.legend() 
-
 fig = plt.figure()
 ax1 = fig.add_subplot(121)
 ax2 = fig.add_subplot(122)
@@ -108,6 +100,8 @@ ax2.grid()
 ax2.legend() 
 
 plt.show()
+
+"""
 
 # Oppgave 1e
 def root_finder(func, guess1:float, guess2:float, tol:float):
@@ -137,3 +131,5 @@ def root_finder(func, guess1:float, guess2:float, tol:float):
 
 def g(z):
     return z + np.sin(z) + np.cos(z)
+
+"""
