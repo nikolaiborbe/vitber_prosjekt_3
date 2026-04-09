@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-'''
+
 # Oppgave 1c)
 def f(x, y):
-    y_1 = np.sin(2*x)
-    y_2 = 2 * np.cos(2*x)
+    y_1, y_2 = y
     dy = [y_2, -4*y_1]
     return np.array(dy)
 
@@ -55,9 +54,9 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
-
+"""
 alpha = 0.8
-tol = 1e-3
+tol = 1e-7
 y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
@@ -100,7 +99,7 @@ ax2.grid()
 ax2.legend() 
 
 plt.show()
-'''
+"""
 
 
 # Oppgave 1e
@@ -112,7 +111,7 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
         guess: Initial guesses for the root
         tol: The difference between the current and last iteration. A lower number corresponds to a higher precision.
         params (optional): Extra arguments to be passed to the function.
-        max_iter: Maximum amount of iteration, prevents infinite while loop.
+        max_iter: Maximum amount of iterations, prevents infinite while loop.
     Returns:
         The root of the function
     '''
@@ -141,7 +140,3 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
-def h(x, y, z):
-    return np.sin(x+y+z)
-
-print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
