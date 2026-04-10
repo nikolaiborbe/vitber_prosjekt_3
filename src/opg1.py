@@ -3,9 +3,8 @@ import matplotlib.pyplot as plt
 
 # Oppgave 1c)
 def f(x, y):
-    y_1 = np.sin(2*x)
-    y_2 = 2 * np.cos(2*x)
-    dy = [y_2, -4*y_1]
+    y_1, y_2 = y
+    dy = [y_2, -4*np.sin(2*x)]
     return np.array(dy)
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
@@ -54,7 +53,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
-
+"""
 alpha = 0.8
 tol = 1e-7
 y_init = np.array([0, 2])
@@ -123,7 +122,7 @@ ax4.set_xlabel("alpha")
 ax4.set_ylabel("number of time steps")
 ax4.grid()
 plt.show()
-
+"""
 #Oppgave 1e
 
 def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6)->np.ndarray:
@@ -164,6 +163,7 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
     return np.array(root_vals)
 
 
+
 #Exercise 1 f)
 
 def F(b:float, f, y_left:float, y_right:float, x_left:float, x_right:float, h0:float, alpha:float, tol:float)->float:
@@ -202,41 +202,57 @@ b2 = 1
 # Minimize F
 args = (f, y_left, y_right, x_left, x_right, h0, alpha, tol)
 b_list = root_finder(F, b1, b2, 1e-7, params = args)
-print(f'{b_list[-1]:.10f}')
 
+for i, b in enumerate(b_list):
+    y_init = np.array([y_left, b])
+    X, Y, H, stats = BogackiShampine(x_left, x_right, y_init, f, h0, tol, alpha)
+    solution = Y[:,0]
 
-"""
-def err_as_func_of_b(b,x_init, x_end,y_0, y_end, f, h0, tol, alpha):
-    
-    Calculates the error in the endpoint of a function from a referance, 
-    with a "guess" b for the start value of the derivative.
-    
-    y_init = np.array([y_0,b])
-    Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
-    err = abs(Y[-1,0] - y_end)
-    return err
+    if i==0:
+        lab = f'b={b:.3f} (Guess 1)'
+    elif i==1:
+        lab = f'b={b:.3f} (Guess 2)'
+    else:
+        lab = f'b={b:.3f}'
 
-def solve_boundary_value_problem():
-    b_true = root_finder(err_as_func_of_b,-1,0,1e-6,params=parameters)
-    return b_true
+    plt.plot(X, solution, label = lab)
 
-print("Oppgave 1f):",solve_boundary_value_problem())
-"""
 
 
 #Exercise 1 g)
 
+alpha = 0.8
+tol = 1e-7
+h0 = 0.01
+x_left = 0
+x_right = 12
+y_left = 0
+y_right = 0
+b1 = -1
+b2 = 1
+
+def g(x, y):
+    y_1, y_2 = y
+    dy = [y_2, y_1 + np.sin(x)]
+    return np.array(dy)
+
+# Minimize F
+args = (g, y_left, y_right, x_left, x_right, h0, alpha, tol)
+b_list = root_finder(F, b1, b2, 1e-7, params = args)
 
 
 
 
+plt.xlabel('x')
+plt.ylabel('y', rotation = 'horizontal')
+plt.legend()
+plt.grid('both')
+plt.title('BVP solution for each iteration')
 
+ticks = np.arange(0, 2*np.pi+np.pi/2, np.pi/2)
+ticklabels = [f'{tick/np.pi}pi' for tick in ticks]
+plt.xticks(ticks, ticklabels)
+
+plt.show()
 
 #Exercise 1 h)
-
-print("1h:")
-
-def h(x, y, z):
-    return np.sin(x+y+z)
-
-print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))

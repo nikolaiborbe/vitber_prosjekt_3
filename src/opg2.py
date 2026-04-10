@@ -81,3 +81,19 @@ print("Reconstructed m1:", m1_reconstructed)
 print("Reconstructed m2:", m2_reconstructed)
 print("Reconstructed m3:", m3_reconstructed)
 print("Reconstructed m4:", m4_reconstructed)
+
+
+
+#Exercise 2d)  
+
+import jax
+from jax import grad 
+
+def derivative_of_vector_func(v: list ,epsilon: float):
+    """
+    takes in vector,  and epsilon and returns 
+    the derivative of v with respects to x
+    """
+    der = []
+    for i in range(len(v)):
+        der += grad(v[i](epsilon))
