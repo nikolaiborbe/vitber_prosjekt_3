@@ -172,14 +172,6 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
 
     return z_1
 
-def g(z):
-    return z + np.sin(z) + np.cos(z)
-
-def h(x, y, z):
-    return np.sin(x+y+z)
-
-print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
-
 
 #Exercise 1 f)
 
@@ -211,7 +203,15 @@ print("Oppgave 1f):",solve_boundary_value_problem())
 
 
 
-#Exercive 1 h)
+#Exercise 1 g)
+
+
+
+
+
+
+
+#Exercise 1 h)
 
 print("1h:")
 
