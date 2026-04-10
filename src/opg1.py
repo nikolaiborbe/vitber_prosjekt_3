@@ -320,7 +320,7 @@ plt.title('Solution to eq. 7')
 plt.show()
 """
 
-# Exercise 1g
+# Exercise 1h
 from scipy.integrate import solve_bvp
 
 def BVP_solver(func, bc_left, bc_right, x_left, x_right, y_init, x_size = 100):
@@ -344,19 +344,19 @@ def BVP_solver(func, bc_left, bc_right, x_left, x_right, y_init, x_size = 100):
 
     assert len(y_init[0]) == x_size, 'y_init must have shape (n, x_size)'
     x = np.linspace(x_left, x_right, x_size)
-    solution = solve_bvp(func, bc_residuals, x, y_init)
+    solution = solve_bvp(func, bc_residuals, x, y_init).sol
 
-    return solution.x, solution.y
+    return solution
 
 x_left = 0
 x_right = 12
 bc_left = 0
 bc_right = 0
 y_init = np.zeros((2, 100))
+x = np.linspace(0,12,100)
 
-scipy_sol = BVP_solver(g, bc_left, bc_right, x_left, x_right, y_init)
-x, Y = scipy_sol
-y = Y[0,:]
+scipy_sol = BVP_solver(g, bc_left, bc_right, x_left, x_right, y_init)(x)
+y = scipy_sol[0,:]
 
 plt.plot(x, y)
 plt.show()
