@@ -12,11 +12,11 @@ tol = 1e-3
 y_init = np.array([0, 2])  # Initial conditions: y(0) = 0, y'(0) = 1
 x_init = 0
 x_end = 2 * np.pi
-h0 = 0.1
+h0 = 0.005
 
 def f(x, y):
     y_1, y_2 = y
-    dy = [y_2, -4*y_1]
+    dy = [y_2, -4*np.sin(2*x)]
     return np.array(dy)
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
@@ -84,8 +84,8 @@ ax2 = fig.add_subplot(222)
 ax1.plot(X, Y[:, 0], label=f'y(x), tol={tol}')
 ax1.plot(X, Y[:, 1], label="y'(x)")
 ax1.set_xlabel('x')
-ax1.set_ylabel('y(x)')
 ax1.set_title('y(x) and y\'(x) as function of x')
+ax1.vlines(np.arange(0, 2 * np.pi + np.pi / 2, np.pi / 2), ymin=-2, ymax=2, colors='r', linestyles='dashed', label='x = n * pi/2')
 ax1.grid()
 ax1.legend()
 
@@ -94,6 +94,7 @@ ax2.plot(X, H, label='Step length h')
 ax2.set_xlabel('x')
 ax2.set_ylabel('h')
 ax2.set_title('Step length varies as a function of x')
+ax2.vlines(np.arange(0, 2 * np.pi + np.pi / 2, np.pi / 2), ymin=0, ymax=max(H), colors='r', linestyles='dashed', label='x = n * pi/2')
 ax2.grid() 
 ax2.legend() 
 
@@ -180,7 +181,6 @@ def h(x, y, z):
 print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
 
 
-
 #Exercise 1 f)
 
 alpha = 0.8
@@ -228,6 +228,25 @@ def opg1h():
     y = np.zeros((2, x.size))
 
     res = solve_bvp(f, bc, x, y)
-    print(res)
-        
-opg1h()
+    return res
+
+res = opg1h()
+
+x = np.linspace(0,12,100)
+y_scipy_sol = res.sol(x)[0]
+
+plt.plot(x, y_scipy_sol)
+plt.grid()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("The solution of y(x) solve_bvp")
+plt.show()
+
+diff = abs(y_scipy_sol - y_sol)
+plt.plot(x, diff)
+plt.grid()
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("The difference between scipy's solver and our, " \
+            "as a function of x")
+plt.show()
