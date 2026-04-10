@@ -245,7 +245,7 @@ def BVP_solver(f, y_left:np.ndarray, y_right:np.ndarray, x_left:float, x_right:f
         y2_right = y2[-1,0]
 
         # Minimize the error at the right boundary using the secant method
-"""
+
 
 alpha = 0.8
 tol = 1e-7
@@ -287,3 +287,4 @@ ticklabels = [f'{tick/np.pi}pi' for tick in ticks]
 plt.xticks(ticks, ticklabels)
 
 plt.show()
+"""
