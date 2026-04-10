@@ -133,7 +133,7 @@ print("Reconstructed omega_tilde:\n", omega_tilde_reconstructed)
 
 
 
-# Exercise 2 d)
+# Exercise 2 e)
 
 # function fun, that will be a input in solve_bvp
 def fun(x, vec):
