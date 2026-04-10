@@ -79,3 +79,54 @@ print("Reconstructed m1:", m1_reconstructed)
 print("Reconstructed m2:", m2_reconstructed)
 print("Reconstructed m3:", m3_reconstructed)
 print("Reconstructed m4:", m4_reconstructed)
+
+
+# Oppgave 2 c)
+
+# testvalue for unknown 2x2 complex matrices
+gamma = np.array([[1 + 2j, 3 + 4j],
+              [6 + 9j, 7 + 8j]])
+gamma_tilde = np.array([[5 + 6j, 7 + 8j],
+              [9 + 10j, 11 + 12j]])
+omega = np.array([[13 + 14j, 15 + 16j],
+              [17 + 18j, 19 + 20j]])
+omega_tilde = np.array([[21 + 22j, 23 + 24j],
+              [25 + 26j, 27 + 28j]])    
+
+def transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
+    """
+    Transforming four unknown 2x2 complex matrices into a single 32-component real vector v.
+    """
+    # Transforming each matrix to a 8-component real vector
+    m_gamma = transform_matrix_to_vector(gamma)
+    m_gamma_tilde = transform_matrix_to_vector(gamma_tilde)
+    m_omega = transform_matrix_to_vector(omega)
+    m_omega_tilde = transform_matrix_to_vector(omega_tilde)
+
+    # Transforming the four 8-component vectors into a single 32-component vector
+    v = transform_four_8comp_vectors_to_32comp_vector(m_gamma, m_gamma_tilde, m_omega, m_omega_tilde)
+
+    return v
+
+print("Vector v:\n", transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde))
+
+def transform_32comp_vector_to_matrixes(v):
+    """
+    Transforming a 32-component real vector v back into four unknown 2x2 complex matrices.
+    """
+    # Transforming the 32-component vector back to four 8-component vectors
+    m_gamma, m_gamma_tilde, m_omega, m_omega_tilde = transform_32comp_vector_to_four_8comp_vectors(v)
+
+    # Transforming each 8-component vector back to a 2x2 complex matrix
+    gamma = transform_vector_to_matrix(m_gamma)
+    gamma_tilde = transform_vector_to_matrix(m_gamma_tilde)
+    omega = transform_vector_to_matrix(m_omega)
+    omega_tilde = transform_vector_to_matrix(m_omega_tilde)
+
+    return gamma, gamma_tilde, omega, omega_tilde
+
+gamma_reconstructed, gamma_tilde_reconstructed, omega_reconstructed, omega_tilde_reconstructed = transform_32comp_vector_to_matrixes(transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde))
+print("Reconstructed gamma:\n", gamma_reconstructed)
+print("Reconstructed gamma_tilde:\n", gamma_tilde_reconstructed)
+print("Reconstructed omega:\n", omega_reconstructed)
+print("Reconstructed omega_tilde:\n", omega_tilde_reconstructed)
