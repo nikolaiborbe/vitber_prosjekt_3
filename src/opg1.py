@@ -98,7 +98,7 @@ ax2.grid()
 ax2.legend() 
 
 plt.show()
-"""
+
 
 
 # Oppgave 1e
@@ -139,17 +139,6 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
 def g(z):
     return z + np.sin(z) + np.cos(z)
 
-def err_as_func_of_b(b, x_init, x_end, y_0, y_end, f, h0, tol, alpha):
-    """
-    Calculates the error in the endpoint of a function from a reference, 
-    with a guess b for the start value of the derivative.
-    """
-    y_init = np.array([y_0, b])
-    Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
-    y_end_approx = Y[-1,0]
-    err = abs(y_end_approx - y_end)
-    return err
-
 alpha = 0.8
 tol = 1e-7
 y_init = np.array([0, 2])
@@ -163,3 +152,112 @@ args = (x_init, x_end, y_0, y_end, f, h0, tol, alpha)
 
 init_b = root_finder(err_as_func_of_b, -10, 10, 1e-5, params = (args), max_iter = 1e6)
 print(init_b)
+
+"""
+
+def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6)->np.ndarray:
+    '''
+    Finds the approximate root of a function using the secant method and saves the solution for each iteration.
+    Parameters:
+        func: A scalar function whose root is to be found
+        guess: Initial guesses for the root
+        tol: The difference between the current and last iteration. A lower number corresponds to a higher precision.
+        params (optional): Extra arguments to be passed to the function
+        max_iter: Maximum amount of iterations, prevents infinite while loop
+    Returns:
+        An array containing the approximated roots for each iteration
+    '''
+
+    z_0, z_1 = guess1, guess2
+    g_0, g_1 = func(z_0, *params), func(z_1, *params)
+
+    diff = 1000
+    iterations = 0
+    root_vals = [z_0, z_1]
+    while (diff >= tol):
+        z_new = (z_0*g_1 - z_1*g_0)/(g_1 - g_0)     # The secant method
+        diff = np.abs(z_new-z_1)
+
+        # Update the parameters
+        z_0 = z_1
+        z_1 = z_new
+        g_0, g_1 = func(z_0, *params), func(z_1, *params)
+
+        root_vals.append(z_1)
+
+        iterations += 1
+        if iterations > max_iter:
+            print('Max iterations exceeded')
+            return np.array([])
+
+    return np.array(root_vals)
+
+def F(b:float, f, y_left:float, y_right:float, x_left:float, x_right:float, h0:float, alpha:float, tol:float)->float:
+    '''
+    Solves the IVP and evaluates the error of the solution at the right boundary.
+    Parameters:
+        b: y'(0)
+        f: The right side of the differential equation
+        y_left: The boundary value at the start of the interval
+        y_right: The boundary value at the end of the interval
+        x_left: The left boundary
+        x_right: The right boundary
+        h0: The initial step size for the IVP solver
+        alpha: Optimism parameter for dynamic step size adjustment
+        tol: The tolerated error of the IVP solver
+    Returns:
+        The error of the solution at the right boundary
+    '''
+    y_init = np.array([y_left, b])
+    Y = BogackiShampine(x_left, x_right, y_init, f, h0, tol, alpha)[1]
+    y_right_approx = Y[-1,0]
+    err = abs(y_right_approx - y_right)
+    return err
+
+"""
+def BVP_solver(f, y_left:np.ndarray, y_right:np.ndarray, x_left:float, x_right:float,
+        b1:float, b2:float, alpha:float, tol:float)->np.ndarray:
+    '''
+    Solves the BVP using the shooting method, and saves the solution for each iteration.
+    Parameters:
+        f: The right hand side of the differential equation
+        y_left: The boundary value at the start of the interval
+        y_right: The boundary value at the end of the interval
+        x_left: The left boundary
+        x_right: The right boundary
+        b1,b2: Initial guesses for y'(0)
+        alpha: A parameter for dynamic step size adjustment in the IVP solver
+        tol: The tolerated error of the appoximate solution
+    Returns:
+        The solution for each iteration of the solver
+    '''
+
+    diff = 1000
+    while diff > tol:
+        # First solve the IVP
+        init_1 = np.array([y_left, b1])
+        init_2 = np.array([y_left, b2])
+
+        y1 = BogackiShampine(x_left, x_right, init_1, f, 0.01, tol, alpha)[1]
+        y2 = BogackiShampine(x_left, x_right, init_2, f, 0.01, tol, alpha)[1]
+
+        y1_right = y1[-1,0]
+        y2_right = y2[-1,0]
+
+        # Minimize the error at the right boundary using the secant method
+"""
+
+alpha = 0.8
+tol = 1e-7
+h0 = 0.01
+x_left = 0
+x_right = 2 * np.pi
+y_left = 0
+y_right = 0
+b1 = -1
+b2 = 1
+
+# Minimize F
+args = (f, y_left, y_right, x_left, x_right, h0, alpha, tol)
+b_list = root_finder(F, b1, b2, 1e-7, params = args)
+print(f'{b_list[-1]:.10f}')
