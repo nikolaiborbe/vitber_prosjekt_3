@@ -109,7 +109,7 @@ def dv(v:np.ndarray, epsilon:float)->np.ndarray:
     product3 = np.matmul(omega_tilde, N)
     product4 = np.matmul(gamma, omega_tilde)
 
-    # The derivatives of omega and omega_tidle
+    # The derivatives of omega and omega_tilde
     d_omega = -2j*(epsilon + 0.01j)*gamma - 2*np.matmul(product1, product2)
     d_omega_tilde = -2j*(epsilon + 0.01j)*gamma_tilde - 2*np.matmul(product3, product4)
 
@@ -173,3 +173,35 @@ def bc_residuals_normal_metal(v_left, v_right):
     res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R)
 
     return res
+
+# Exercise 2e
+def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
+    """
+    The right hand side of the differential equation
+    Parameters:
+        x: Vector with m components
+        vec: 32 x m matrix that contains the vector v at each position in x
+
+    Returns:
+        a 32 x m matrix that contains d/dx(v) at each position in x
+    """
+    dv_vec = np.zeros_like(vec)
+
+    for i in range(vec.shape[1]): #iterate through each column of vec
+        dv_vec[:, i] = dv(vec[:, i], epsilon) 
+
+    return np.array(dv_vec)
+
+# Exercise 2g
+from scipy.integrate import solve_bvp
+
+m = 101
+x = np.linspace(0, 1, m)
+y = np.zeros((32, m))
+
+# Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
+solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = -1), bc_residuals_normal_metal, x, y)
+sol_x, sol_y = solution.x, solution.y
+
+print(sol_x.shape)
+print(sol_y.shape)
