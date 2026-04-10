@@ -94,6 +94,7 @@ ax2.plot(X, H, label='Step length h')
 ax2.set_xlabel('x')
 ax2.set_ylabel('h')
 ax2.set_title('Step length varies as a function of x')
+ax2.vlines(np.arange(0, 2 * np.pi + np.pi / 2, np.pi / 2), ymin=0, ymax=max(H), colors='r', linestyles='dashed', label='x = n * pi/2')
 ax2.grid() 
 ax2.legend() 
 
