@@ -1,22 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({
-    "axes.grid": True,
-})
-
-# Oppgave 1 c)
-
-alpha = 0.8
-tol = 1e-3
-y_init = np.array([0, 2])  # Initial conditions: y(0) = 0, y'(0) = 1
-x_init = 0
-x_end = 2 * np.pi
-h0 = 0.005
-
+# Oppgave 1c)
 def f(x, y):
-    y_1, y_2 = y
-    dy = [y_2, -4*np.sin(2*x)]
+    y_1 = np.sin(2*x)
+    y_2 = 2 * np.cos(2*x)
+    dy = [y_2, -4*y_1]
     return np.array(dy)
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
@@ -67,7 +56,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     return np.array(X), np.array(Y), np.array(H), stats
 
 alpha = 0.8
-tol = 1e-3
+tol = 1e-7
 y_init = np.array([0, 2])
 x_init = 0
 x_end = 2 * np.pi
@@ -135,20 +124,19 @@ ax4.set_ylabel("number of time steps")
 ax4.grid()
 plt.show()
 
+#Oppgave 1e
 
-
-# Oppgave 1e
-def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6):
+def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6)->np.ndarray:
     '''
-    Finds the approximate root of a function using the secant method.
+    Finds the approximate root of a function using the secant method and saves the solution for each iteration.
     Parameters:
         func: A scalar function whose root is to be found
         guess: Initial guesses for the root
         tol: The difference between the current and last iteration. A lower number corresponds to a higher precision.
-        params (optional): Extra arguments to be passed to the function.
-        max_iter: Maximum amount of iteration, prevents infinite while loop.
+        params (optional): Extra arguments to be passed to the function
+        max_iter: Maximum amount of iterations, prevents infinite while loop
     Returns:
-        The root of the function
+        An array containing the approximated roots for each iteration
     '''
 
     z_0, z_1 = guess1, guess2
@@ -156,6 +144,7 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
 
     diff = 1000
     iterations = 0
+    root_vals = [z_0, z_1]
     while (diff >= tol):
         z_new = (z_0*g_1 - z_1*g_0)/(g_1 - g_0)     # The secant method
         diff = np.abs(z_new-z_1)
@@ -165,31 +154,63 @@ def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), ma
         z_1 = z_new
         g_0, g_1 = func(z_0, *params), func(z_1, *params)
 
+        root_vals.append(z_1)
+
         iterations += 1
         if iterations > max_iter:
             print('Max iterations exceeded')
-            return None
+            return np.array([])
 
-    return z_1
+    return np.array(root_vals)
 
 
 #Exercise 1 f)
 
+def F(b:float, f, y_left:float, y_right:float, x_left:float, x_right:float, h0:float, alpha:float, tol:float)->float:
+    '''
+    Solves the IVP and evaluates the error of the solution at the right boundary.
+    Parameters:
+        b: y'(0)
+        f: The right side of the differential equation
+        y_left: The boundary value at the start of the interval
+        y_right: The boundary value at the end of the interval
+        x_left: The left boundary
+        x_right: The right boundary
+        h0: The initial step size for the IVP solver
+        alpha: Optimism parameter for dynamic step size adjustment
+        tol: The tolerated error of the IVP solver
+    Returns:
+        The error of the solution at the right boundary
+    '''
+    y_init = np.array([y_left, b])
+    Y = BogackiShampine(x_left, x_right, y_init, f, h0, tol, alpha)[1]
+    y_right_approx = Y[-1,0]
+    err = abs(y_right_approx - y_right)
+    return err
+
+
 alpha = 0.8
-tol = 1e-3
-y_0 = 0
-y_end = 0
-x_init = 0
-x_end = 2 * np.pi
-h0 = 0.1
+tol = 1e-7
+h0 = 0.01
+x_left = 0
+x_right = 2 * np.pi
+y_left = 0
+y_right = 0
+b1 = -1
+b2 = 1
 
-parameters = (x_init, x_end,y_0, y_end, f, h0, tol, alpha)
+# Minimize F
+args = (f, y_left, y_right, x_left, x_right, h0, alpha, tol)
+b_list = root_finder(F, b1, b2, 1e-7, params = args)
+print(f'{b_list[-1]:.10f}')
 
+
+"""
 def err_as_func_of_b(b,x_init, x_end,y_0, y_end, f, h0, tol, alpha):
-    """
+    
     Calculates the error in the endpoint of a function from a referance, 
     with a "guess" b for the start value of the derivative.
-    """
+    
     y_init = np.array([y_0,b])
     Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
     err = abs(Y[-1,0] - y_end)
@@ -200,7 +221,7 @@ def solve_boundary_value_problem():
     return b_true
 
 print("Oppgave 1f):",solve_boundary_value_problem())
-
+"""
 
 
 #Exercise 1 g)
@@ -215,38 +236,7 @@ print("Oppgave 1f):",solve_boundary_value_problem())
 
 print("1h:")
 
-def opg1h():
-    from scipy.integrate import solve_bvp
+def h(x, y, z):
+    return np.sin(x+y+z)
 
-    def f(x, y: np.ndarray):
-        return np.vstack((y[1], y[0] + np.sin(x)))
-
-    def bc(ya, yb):
-        return np.array([ya[0], yb[0]])
-
-    x = np.linspace(0, 12, 10)
-    y = np.zeros((2, x.size))
-
-    res = solve_bvp(f, bc, x, y)
-    return res
-
-res = opg1h()
-
-x = np.linspace(0,12,100)
-y_scipy_sol = res.sol(x)[0]
-
-plt.plot(x, y_scipy_sol)
-plt.grid()
-plt.xlabel("x")
-plt.ylabel("y")
-plt.title("The solution of y(x) solve_bvp")
-plt.show()
-
-diff = abs(y_scipy_sol - y_sol)
-plt.plot(x, diff)
-plt.grid()
-plt.xlabel("x")
-plt.ylabel("y")
-plt.title("The difference between scipy's solver and our, " \
-            "as a function of x")
-plt.show()
+print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
