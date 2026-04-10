@@ -55,7 +55,7 @@ def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     }
 
     return np.array(X), np.array(Y), np.array(H), stats
-""""
+
 alpha = 0.8
 tol = 1e-3
 y_init = np.array([0, 2])
@@ -122,10 +122,9 @@ ax4.set_title("Number of time steps as a function of alpha")
 ax4.set_xlabel("alpha")
 ax4.set_ylabel("number of time steps")
 ax4.grid()
-
 plt.show()
 
-"""
+
 
 # Oppgave 1e
 def root_finder(func, guess1:float, guess2:float, tol:float, params:tuple=(), max_iter:float=1e6):
@@ -188,7 +187,7 @@ parameters = (x_init, x_end,y_0, y_end, f, h0, tol, alpha)
 def err_as_func_of_b(b,x_init, x_end,y_0, y_end, f, h0, tol, alpha):
     """
     Calculates the error in the endpoint of a function from a referance, 
-    with a guess b for the start value of the derivative.
+    with a "guess" b for the start value of the derivative.
     """
     y_init = np.array([y_0,b])
     Y = BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha)[1]
