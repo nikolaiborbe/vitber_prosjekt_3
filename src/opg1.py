@@ -1,13 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Oppgave 1c)
+plt.rcParams.update({
+    "axes.grid": True,
+})
+
+# Oppgave 1 c)
+
+alpha = 0.8
+tol = 1e-3
+y_init = np.array([0, 2])  # Initial conditions: y(0) = 0, y'(0) = 1
+x_init = 0
+x_end = 2 * np.pi
+h0 = 0.1
+
 def f(x, y):
-    y_1 = np.sin(2*x)
-    y_2 = 2 * np.cos(2*x)
+    y_1, y_2 = y
     dy = [y_2, -4*y_1]
     return np.array(dy)
-
 
 def BogackiShampine(x_init, x_end, y_init, f, h0, tol, alpha):
     x_n = x_init
@@ -171,7 +181,6 @@ print(root_finder(h, -1, 1, 1e-5, params=(5, 456)))
 
 
 
-
 #Exercise 1 f)
 
 alpha = 0.8
@@ -199,3 +208,26 @@ def solve_boundary_value_problem():
     return b_true
 
 print("Oppgave 1f):",solve_boundary_value_problem())
+
+
+
+#Exercive 1 h)
+
+print("1h:")
+
+def opg1h():
+    from scipy.integrate import solve_bvp
+
+    def f(x, y: np.ndarray):
+        return np.vstack((y[1], y[0] + np.sin(x)))
+
+    def bc(ya, yb):
+        return np.array([ya[0], yb[0]])
+
+    x = np.linspace(0, 12, 10)
+    y = np.zeros((2, x.size))
+
+    res = solve_bvp(f, bc, x, y)
+    print(res)
+        
+opg1h()
