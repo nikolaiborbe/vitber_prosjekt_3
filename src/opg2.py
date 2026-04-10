@@ -204,4 +204,4 @@ solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = -1), bc_residuals_normal
 sol_x, sol_y = solution.x, solution.y
 
 print(sol_x.shape)
-print(sol_y.shape)
+print(sol_y.shape) 
