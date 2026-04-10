@@ -288,3 +288,75 @@ plt.xticks(ticks, ticklabels)
 
 plt.show()
 """
+def g(x, y):
+    y_1, y_2 = y
+    dy = [y_2, y_1 + np.sin(x)]
+
+    return np.array(dy)
+"""
+alpha = 0.8
+tol = 1e-7
+h0 = 0.01
+x_left = 0
+x_right = 12
+y_left = 0
+y_right = 0
+b1 = -1
+b2 = 1
+
+# Minimize F
+args = (g, y_left, y_right, x_left, x_right, h0, alpha, tol)
+b_list = root_finder(F, b1, b2, 1e-7, params = args)
+y_init = np.array([y_left, b_list[-1]])
+
+# Plot the solution
+X, Y, H, stats = BogackiShampine(x_left, x_right, y_init, g, h0, tol, alpha)
+y_sol = Y[:,0]
+
+plt.plot(X, y_sol)
+plt.xlabel('x')
+plt.ylabel('y', rotation = 'horizontal')
+plt.title('Solution to eq. 7')
+plt.show()
+"""
+
+# Exercise 1g
+from scipy.integrate import solve_bvp
+
+def BVP_solver(func, bc_left, bc_right, x_left, x_right, y_init, x_size = 100):
+    '''
+    Uses scipy to solve a BVP
+    Parameters:
+      func: The right hand side of the BVP
+      bc: The boundary conditions
+      x_left/x_right: The left/right of the interval
+      y_init: An initial guess for the solution
+      x_size: The amount of points on the discretized x-axis
+    Returns:
+      The final x-axis and the solution at the nodes of this axis
+    '''
+
+    def bc_residuals(y_left:np.ndarray, y_right:np.ndarray)->np.ndarray:
+        res_left = y_left[0] - bc_left
+        res_right = y_right[0] - bc_right
+
+        return np.array([res_left, res_right])
+
+    assert len(y_init[0]) == x_size, 'y_init must have shape (n, x_size)'
+    x = np.linspace(x_left, x_right, x_size)
+    solution = solve_bvp(func, bc_residuals, x, y_init)
+
+    return solution.x, solution.y
+
+x_left = 0
+x_right = 12
+bc_left = 0
+bc_right = 0
+y_init = np.zeros((2, 100))
+
+scipy_sol = BVP_solver(g, bc_left, bc_right, x_left, x_right, y_init)
+x, Y = scipy_sol
+y = Y[0,:]
+
+plt.plot(x, y)
+plt.show()
