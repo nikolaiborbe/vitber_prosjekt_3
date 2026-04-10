@@ -1,7 +1,7 @@
 import numpy as np
 
 
-# Oppgave 2 a)
+# Exercise 2 a)
 
 # testvalue for matrix M
 M = np.array([[1 + 2j, 3 + 4j],
@@ -47,7 +47,7 @@ print("Reconstructed Matrix M:\n", M_reconstructed)
 
 
 
-# Oppgave 2 b)
+# Exercise 2 b)
 
 # testvalue for four 8-component real vectors
 m1 = np.array([1, 2, 3, 4, 5, 6, 7, 8])
@@ -81,7 +81,7 @@ print("Reconstructed m3:", m3_reconstructed)
 print("Reconstructed m4:", m4_reconstructed)
 
 
-# Oppgave 2 c)
+# Exercise 2 c)
 
 # testvalue for unknown 2x2 complex matrices
 gamma = np.array([[1 + 2j, 3 + 4j],
@@ -130,3 +130,17 @@ print("Reconstructed gamma:\n", gamma_reconstructed)
 print("Reconstructed gamma_tilde:\n", gamma_tilde_reconstructed)
 print("Reconstructed omega:\n", omega_reconstructed)
 print("Reconstructed omega_tilde:\n", omega_tilde_reconstructed)
+
+
+
+# Exercise 2 d)
+
+# function fun, that will be a input in solve_bvp
+def fun(x, vec):
+    """
+    x: Vector with m components
+    vec: 32 x m matrix, that conatains the vector v at each position on x
+
+    the function returns a 32 x m matrix that contains d/dx(v) at each position on x
+    """
+    
