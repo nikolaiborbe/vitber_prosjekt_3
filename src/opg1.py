@@ -260,4 +260,30 @@ b2 = 1
 # Minimize F
 args = (f, y_left, y_right, x_left, x_right, h0, alpha, tol)
 b_list = root_finder(F, b1, b2, 1e-7, params = args)
-print(f'{b_list[-1]:.10f}')
+
+# Plot the solution for each iteration of the solver
+for i, b in enumerate(b_list):
+    y_init = np.array([y_left, b])
+    X, Y, H, stats = BogackiShampine(x_left, x_right, y_init, f, h0, tol, alpha)
+    solution = Y[:,0]
+
+    if i==0:
+        lab = f'b={b:.3f} (Guess 1)'
+    elif i==1:
+        lab = f'b={b:.3f} (Guess 2)'
+    else:
+        lab = f'b={b:.3f}'
+
+    plt.plot(X, solution, label = lab)
+
+plt.xlabel('x')
+plt.ylabel('y', rotation = 'horizontal')
+plt.legend()
+plt.grid('both')
+plt.title('BVP solution for each iteration')
+
+ticks = np.arange(0, 2*np.pi+np.pi/2, np.pi/2)
+ticklabels = [f'{tick/np.pi}pi' for tick in ticks]
+plt.xticks(ticks, ticklabels)
+
+plt.show()
