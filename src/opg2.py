@@ -116,3 +116,60 @@ def dv(v:np.ndarray, epsilon:float)->np.ndarray:
     dv = transform_matrices_to_32comp_vector(d_gamma, d_gamma_tilde, d_omega, d_omega_tilde)
 
     return dv
+
+# Exercise 2f
+def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R):
+    '''
+    The boundary conditions for the system.
+    '''
+    gamma_0, gamma_tilde_0, omega_0, omega_tilde_0 = transform_32comp_vector_to_matrices(v_left)
+    gamma_1, gamma_tilde_1, omega_1, omega_tilde_1 = transform_32comp_vector_to_matrices(v_right)
+
+    # The identity matrix
+    I = np.identity(2)
+
+    # Find N and N_tilde for each interface metal L and R
+    N_L_inv = I - np.matmul(gamma_L, gamma_tilde_L)
+    N_L = np.linalg.inv(N_L_inv)
+
+    N_tilde_L_inv = I - np.matmul(gamma_tilde_L, gamma_L)
+    N_tilde_L = np.linalg.inv(N_tilde_L_inv)
+
+    N_R_inv = I - np.matmul(gamma_R, gamma_tilde_R)
+    N_R = np.linalg.inv(N_R_inv)
+
+    N_tilde_R_inv = I - np.matmul(gamma_tilde_R, gamma_R)
+    N_tilde_R = np.linalg.inv(N_tilde_R_inv)
+
+    # Define some more matrices
+    M1 = I - np.matmul(gamma_0, gamma_tilde_L)
+    M2 = gamma_L - gamma_0
+
+    M3 = I - np.matmul(gamma_tilde_0, gamma_L)
+    M4 = gamma_tilde_L - gamma_tilde_0
+
+    M5 = I - np.matmul(gamma_1, gamma_tilde_R)
+    M6 = gamma_R - gamma_1
+
+    M7 = I - np.matmul(gamma_tilde_1, gamma_R)
+    M8 = gamma_tilde_R - gamma_tilde_1
+
+    # The boundary conditions
+    bc1 = omega_0 + (1/3)*np.matmul(np.matmul(M1, N_L), M2)
+    bc2 = omega_tilde_0 + (1/3)*np.matmul(np.matmul(M3, N_tilde_L), M4)
+    bc3 = omega_1 - (1/3)*np.matmul(np.matmul(M5, N_R), M6)
+    bc4 = omega_tilde_1 - (1/3)*np.matmul(np.matmul(M7, N_tilde_R), M8)
+
+    # Vectorize
+    res = transform_matrices_to_32comp_vector(omega_0, omega_tilde_0, omega_1, omega_tilde_1)
+
+    return res
+
+def bc_residuals_normal_metal(v_left, v_right):
+    # In this case the ricatti matrices for the interface metals are all zero
+    gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R = np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2))
+
+    # Compute the residuals at the boundaries
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R)
+
+    return res
