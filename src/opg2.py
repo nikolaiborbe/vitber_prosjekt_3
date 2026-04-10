@@ -120,13 +120,21 @@ def dv(v:np.ndarray, epsilon:float)->np.ndarray:
 
 
 # Exercise 2 e)
+epsilon = 0.01
 
 # function fun, that will be a input in solve_bvp
-def fun(x, vec):
+def fun(x: np.ndarray, vec: np.ndarray) -> np.ndarray:
     """
     x: Vector with m components
     vec: 32 x m matrix, that conatains the vector v at each position on x
 
     the function returns a 32 x m matrix that contains d/dx(v) at each position on x
     """
+    dv_vec = np.zeros_like(vec)
+
+    for i in range(vec.shape[1]): #iterate through each column of vec
+        dv_vec[:, i] = dv(vec[:, i], epsilon) 
+
+    return np.array(dv_vec)
+
     
