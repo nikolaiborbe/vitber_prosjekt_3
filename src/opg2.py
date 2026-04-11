@@ -198,10 +198,17 @@ from scipy.integrate import solve_bvp
 m = 101
 x = np.linspace(0, 1, m)
 y = np.zeros((32, m))
+epsilon_list = [0,1,2]
 
-# Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
-solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = -1), bc_residuals_normal_metal, x, y)
-sol_x, sol_y = solution.x, solution.y
+sol_list = []
+for epsilon in epsilon_list:
+  # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
+  solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), bc_residuals_normal_metal, x, y)
+  sol_list.append((solution.x, solution.y))
 
-print(sol_x.shape)
-print(sol_y.shape) 
+x_0, y_0 = sol_list[0]
+x_1, y_1 = sol_list[1]
+x_2, y_2 = sol_list[2]
+print(y_0)
+print(y_1)
+print(y_2)
