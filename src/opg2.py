@@ -311,7 +311,7 @@ plt.show()
 '''
 
 # Exercise 2k
-
+'''
 m = 101
 epsilons = np.linspace(0, 2, 101)
 l = [0.5, 1, 1.5]
@@ -331,16 +331,62 @@ for L in l:
         D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))] # Take the density of states at the middle of the normal metal
         x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
 
+        # Store the solution
         label = f'(l, epsilon) = ({L}, {epsilon})'
         solution_dict[label] = (x_sol, y_sol)
 
-'''
-plt.plot(epsilons, D_energy, label = f'$l={L}$', linewidth = 1.3)
+# Plotting
+for L in l:
+    D_energy = np.zeros((len(epsilons)))
+    for j in range(len(epsilons)):
+        epsilon = epsilons[j]
+        label = f'(l, epsilon) = ({L}, {epsilon})'
+
+        x_sol, y_sol = solution_dict[label]
+
+        # Find the density of states in the middle of the normal metal
+        D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))]
+
+
+    plt.plot(epsilons, D_energy, label = f'$l={L}$')
 
 plt.legend(fontsize = 12)
+plt.grid('both')
+plt.xlabel('$\\epsilon$', size = 12)
+plt.ylabel('$\\frac{D}{D_0}$', size = 16, rotation = 'horizontal', labelpad = 10)
+plt.title('The normalized density of states as a function of energy')
+plt.show()
+'''
+
+# OLD 2k
+'''
+m = 101
+epsilons = np.linspace(0, 2, 101)
+l = [0.5, 1, 2]
+phi_L, phi_R = 0, 0
+
+# Save the solutions
+solutions = []
+
+for L in l:
+    x = np.linspace(0, L, m)
+    y = np.zeros((32, m))
+
+    D_energy = np.zeros((len(epsilons)))
+
+    for j in tqdm.trange(len(epsilons)):
+        epsilon = epsilons[j]
+        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
+        x_sol, y_sol = solution.x, solution.y
+        D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))] # Take the density of states at the middle of the normal metal
+        y = y_sol # Use the solution as the initial guess for the next epsilon
+
+    plt.plot(epsilons, D_energy, label = f'$l={L}$', linewidth = 1.3)
+
+plt.legend(fontsize = 10)
 plt.grid(axis = 'both')
-plt.xlabel('$\\epsilon$', size = 15)
-plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 10)
+plt.xlabel('$\\epsilon$', size = 12)
+plt.ylabel('$\\frac{D}{D_0}$', size = 15, rotation = 'horizontal', labelpad = 10)
 plt.title('The normalized density of states as a function of energy')
 plt.show()
 '''
