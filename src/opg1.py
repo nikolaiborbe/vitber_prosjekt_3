@@ -399,4 +399,8 @@ scipy_sol = BVP_solver(g, bc_left, bc_right, x_left, x_right, y_init)(x)
 y = scipy_sol[0,:]
 
 plt.plot(x, y)
+<<<<<<< HEAD
 plt.show()
+=======
+plt.show()
+>>>>>>> origin/Petter

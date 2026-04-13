@@ -1,4 +1,9 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from utils import (
+    calculate_Ns
+)
+
 
 # Oppgave 2 a)
 def transform_matrix_to_vector(M):
@@ -69,7 +74,7 @@ def transform_matrices_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
 
 def transform_32comp_vector_to_matrices(v):
     """
-    Transforming a 32-component real vector v back into four unknown 2x2 complex matrices.
+    Transforms a 32-component real vector v into four 2x2 complex matrices.
     """
     # Transforming the 32-component vector back to four 8-component vectors
     m_gamma, m_gamma_tilde, m_omega, m_omega_tilde = transform_32comp_vector_to_four_8comp_vectors(v)
@@ -183,9 +188,10 @@ def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
 
     return np.array(dv_vec)
 
+
 # Exercise 2g
 from scipy.integrate import solve_bvp
-
+'''
 m = 101
 x = np.linspace(0, 1, m)
 y = np.zeros((32, m))
@@ -197,18 +203,10 @@ l = 1
 sol_list = []
 for epsilon in epsilon_list:
   # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
-  solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), bc_residuals_normal_metal, x, y)
+  solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), lambda x, y: bc_residuals_normal_metal(x, y, l), x, y)
   sol_list.append((solution.x, solution.y))
-
-x_0, y_0 = sol_list[0]
-x_1, y_1 = sol_list[1]
-x_2, y_2 = sol_list[2]
-print(y_0)
-print(y_1)
-print(y_2)
-"""
-#Exercise 2h
-
+'''
+# Exercise 2h
 def green_function(gamma:np.ndarray, gamma_tilde:np.ndarray):
     N, N_tilde = calculate_Ns(gamma, gamma_tilde)
     I = np.identity(2)
@@ -255,6 +253,22 @@ def from_solution_to_density_of_states(x:np.ndarray, y:np.ndarray)->np.ndarray:
 
     return D_array
 
+'''
+# Plotting
+fig2h, axs2h = plt.subplots(3, 1, sharex='all', sharey='all')
+for i, sol in enumerate(sol_list):
+    x, y = sol
+    D = from_solution_to_density_of_states(x, y)
+    axs2h[i].plot(x, D, label = f'$\\epsilon={i}$', linewidth = 1.3)
+    axs2h[i].legend(fontsize = 12)
+    axs2h[i].grid(axis = 'both')
+
+axs2h[2].set_xlabel('$x/l$', size = 15)
+axs2h[1].set_ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+fig2h.suptitle('The normalized density of states as a function of position')
+plt.show()
+'''
+
 #Exercise 2i
 
 def bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l):
@@ -272,7 +286,7 @@ def bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l):
     gamma_tilde_R = np.array([[0,b],[a,0]]) * np.exp(-phi_R*1j)
 
     # Compute the residuals at the boundaries
-    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R,l)
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l)
 
     return res
 
@@ -291,3 +305,14 @@ x_sol, y_sol = solution.x, solution.y
 
 
 print("Oppgave 2j:",y_sol)
+
+x, y = x_sol, y_sol
+D = from_solution_to_density_of_states(x, y)
+plt.plot(x, D, label = f'$\\epsilon={epsilon}$', linewidth = 1.3)
+plt.legend(fontsize = 12)
+plt.grid(axis = 'both')
+
+plt.xlabel('$x/l$', size = 15)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.title('The normalized density of states as a function of position')
+plt.show()
