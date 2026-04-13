@@ -294,8 +294,8 @@ y = np.zeros((32,m))
 l = 1
 phi_L, phi_R = 0, 0
 
-solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l), x, y)
-x_sol, y_sol = solution.x, solution.y 
+solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, l), x, y)
+x_sol, y_sol = solution.x, solution.y
 
 D = from_solution_to_density_of_states(x_sol, y_sol)
 plt.plot(x_sol, D, label = f'$\\epsilon={epsilon}$', linewidth = 1.3)
