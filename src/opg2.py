@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # Oppgave 2 a)
 def transform_matrix_to_vector(M):
     """
@@ -200,6 +199,8 @@ x = np.linspace(0, 1, m)
 y = np.zeros((32, m))
 epsilon_list = [0,1,2]
 
+
+
 sol_list = []
 for epsilon in epsilon_list:
   # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
@@ -212,3 +213,60 @@ x_2, y_2 = sol_list[2]
 print(y_0)
 print(y_1)
 print(y_2)
+
+#Exercise 2h
+
+def green_function(gamma:np.ndarray, gamma_tilde:np.ndarray):
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+    I = np.identity(2)
+
+    g11 = 2*N - I
+    g12 = 2*np.matmul(N, gamma)
+    g21 = -2*np.matmul(N_tilde, gamma_tilde)
+    g22 = -2*N_tilde + I
+
+    g = np.block([[g11,g12],[g21,g22]])
+
+    return g
+
+def density_of_states(g:np.ndarray)->float:
+    '''
+    Computes the normalized density of stated
+    Parameters:
+        The green function
+    '''
+    rho_hat = np.diag([1,1,-1,-1])
+    product = np.matmul(rho_hat, g)
+    trace = np.trace(product)
+
+    D = np.real(trace)/4
+
+    return D
+
+def from_solution_to_density_of_states(x:np.ndarray, y:np.ndarray)->np.ndarray:
+    '''
+    Finds the density of states as a function of position x, given a solution (x,y) from the BVP solver.
+    Parameters:
+        x: The x-array returned form the BVP solver (solution.x)
+        y: The y-array returned form the BVP solver (solution.y)
+    Returns:
+        The density of states for each position along x
+    '''
+    D_array = np.zeros(len(x))
+    for i in range(len(x)):
+        v = y[:,i]
+        gamma, gamma_tilde, omega, omega_tilde = transform_32comp_vector_to_matrices(v)
+        g = green_function(gamma, gamma_tilde)
+        D = density_of_states(g)
+        D_array[i] = D
+
+    return D_array
+
+#Exercise 2j
+
+m = 101
+epsilon = 2
+x = np.linspace(0,1,m)
+y = np.zeros((32,m))
+
+solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), boundary condition, x, y)
