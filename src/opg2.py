@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import solve_bvp
 import tqdm
 from utils import (
     calculate_Ns
@@ -191,7 +192,6 @@ def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
 
 
 # Exercise 2g
-from scipy.integrate import solve_bvp
 '''
 m = 101
 x = np.linspace(0, 1, m)
@@ -311,6 +311,7 @@ plt.show()
 '''
 
 # Exercise 2k
+'''
 m = 101
 epsilons = np.linspace(0, 2, 101)
 l = [0.5, 1, 2]
@@ -335,6 +336,71 @@ for L in l:
 plt.legend(fontsize = 12)
 plt.grid(axis = 'both')
 plt.xlabel('$\\epsilon$', size = 15)
-plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 10)
 plt.title('The normalized density of states as a function of energy')
 plt.show()
+'''
+
+# Exercise 2l
+def differentiate_Ns(gamma, gamma_tilde, omega, omega_tilde):
+    '''
+    Calculates the matrices N and N_tilde differentiated wrt. x.
+    '''
+
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+
+    dN = N @ ((omega @ gamma_tilde) + (gamma @ omega_tilde)) @ N
+    dN_tilde = N_tilde @ ((omega_tilde @ gamma) + (gamma_tilde @ omega)) @ N_tilde
+
+    return dN, dN_tilde
+
+def differentiate_green_function(gamma, gamma_tilde, omega, omega_tilde):
+    '''
+    Calculates the green function differentiated wrt. x.
+    '''
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+    dN, dN_tilde = differentiate_Ns(gamma, gamma_tilde, omega, omega_tilde)
+
+    dg11 = dN
+    dg12 = (N @ omega) + (dN @ gamma)
+    dg21 = (-N_tilde @ omega_tilde) - (dN_tilde @ gamma_tilde)
+    dg22 = -dN_tilde
+
+    dg = 2 * np.block([[dg11, dg12],[dg21, dg22]])
+
+    return dg
+
+def current_integrand(gamma, gamma_tilde, omega, omega_tilde):
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+    dN, dN_tilde = differentiate_Ns(gamma, gamma_tilde, omega, omega_tilde)
+
+    g = green_function(gamma, gamma_tilde)
+    dg = differentiate_green_function(gamma, gamma_tilde, omega, omega_tilde)
+
+    rho_hat = np.diag([1,1,-1,-1])
+
+    product = rho_hat @ ((g @ dg) - (dg @ g))
+    trace = np.trace(product)
+
+    j = np.real(trace)
+
+    return j
+
+def from_solution_to_current_integrand(x:np.ndarray, y:np.ndarray)->np.ndarray:
+    '''
+    Finds the current integrand as a function of position x, given a solution (x,y) from the BVP solver.
+    Parameters:
+        x: The x-array returned form the BVP solver (solution.x)
+        y: The y-array returned form the BVP solver (solution.y)
+    Returns:
+        The current integrand for each position along x
+    '''
+
+    j_array = np.zeros(len(x))
+    for i in range(len(x)):
+        v = y[:,i]
+        gamma, gamma_tilde, omega, omega_tilde = transform_32comp_vector_to_matrices(v)
+        j = current_integrand(gamma, gamma_tilde, omega, omega_tilde)
+        j_array[i] = j
+
+    return j_array
