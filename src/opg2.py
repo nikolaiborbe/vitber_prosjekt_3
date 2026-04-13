@@ -2,13 +2,6 @@ import numpy as np
 
 
 # Oppgave 2 a)
-print("Oppgave 2a:")
-
-# testvalue for matrix M
-M = np.array([[1 + 2j, 3 + 4j],
-              [6 + 9j, 7 + 8j]])
-
-
 def transform_matrix_to_vector(M):
     """
     Transforming a 2x2 complex matrix M into a real vector m.
@@ -27,9 +20,6 @@ def transform_matrix_to_vector(M):
 
     return np.array(m)
 
-m = transform_matrix_to_vector(M)
-print("Vector m:\n", m)
-
 
 def transform_vector_to_matrix(m):
     """
@@ -43,28 +33,13 @@ def transform_vector_to_matrix(m):
     M = real + 1j * imag
     return M.reshape((2, 2))
 
-M_reconstructed = transform_vector_to_matrix(m)
-print("Reconstructed Matrix M:\n", M_reconstructed)
-
-
 
 # Oppgave 2 b)
-print("Oppgave 2b:")
-
-# testvalue for four 8-component real vectors
-m1 = np.array([1, 2, 3, 4, 5, 6, 7, 8])
-m2 = np.array([9, 10, 11, 12, 13, 14, 15, 16])
-m3 = np.array([17, 18, 19, 20, 21, 22, 23, 24])
-m4 = np.array([25, 26, 27, 28, 29, 30, 31, 32])
-
 def transform_four_8comp_vectors_to_32comp_vector(m1, m2, m3, m4):
     """
     Transforming four 8-component real vectors into a single 32-component real vector v.
     """
     return np.concatenate((m1, m2, m3, m4))
-
-v = transform_four_8comp_vectors_to_32comp_vector(m1, m2, m3, m4)
-print("Vector v:\n", v)
 
 def transform_32comp_vector_to_four_8comp_vectors(v):
     """
@@ -76,27 +51,8 @@ def transform_32comp_vector_to_four_8comp_vectors(v):
     m4 = v[24:32]
     return m1, m2, m3, m4
 
-m1_reconstructed, m2_reconstructed, m3_reconstructed, m4_reconstructed = transform_32comp_vector_to_four_8comp_vectors(v)
-print("Reconstructed m1:", m1_reconstructed)
-print("Reconstructed m2:", m2_reconstructed)
-print("Reconstructed m3:", m3_reconstructed)
-print("Reconstructed m4:", m4_reconstructed)
-
-
-
-# Oppgave 2 c)
-
-# testvalue for unknown 2x2 complex matrices
-gamma = np.array([[1 + 2j, 3 + 4j],
-              [6 + 9j, 7 + 8j]])
-gamma_tilde = np.array([[5 + 6j, 7 + 8j],
-              [9 + 10j, 11 + 12j]])
-omega = np.array([[13 + 14j, 15 + 16j],
-              [17 + 18j, 19 + 20j]])
-omega_tilde = np.array([[21 + 22j, 23 + 24j],
-              [25 + 26j, 27 + 28j]])    
-
-def transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
+# Oppgave 2 c) 
+def transform_matrices_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
     """
     Transforming four unknown 2x2 complex matrices into a single 32-component real vector v.
     """
@@ -111,9 +67,8 @@ def transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
 
     return v
 
-print("Vector v:\n", transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde))
 
-def transform_32comp_vector_to_matrixes(v):
+def transform_32comp_vector_to_matrices(v):
     """
     Transforming a 32-component real vector v back into four unknown 2x2 complex matrices.
     """
@@ -128,26 +83,132 @@ def transform_32comp_vector_to_matrixes(v):
 
     return gamma, gamma_tilde, omega, omega_tilde
 
-gamma_reconstructed, gamma_tilde_reconstructed, omega_reconstructed, omega_tilde_reconstructed = transform_32comp_vector_to_matrixes(transform_matrixes_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde))
-print("Reconstructed gamma:\n", gamma_reconstructed)
-print("Reconstructed gamma_tilde:\n", gamma_tilde_reconstructed)
-print("Reconstructed omega:\n", omega_reconstructed)
-print("Reconstructed omega_tilde:\n", omega_tilde_reconstructed)
+# Exercise 2d
+def dv(v:np.ndarray, epsilon:float)->np.ndarray:
+    '''
+    Computes the derivative of the 32 component vector v wrt. x.
+    '''
+    gamma, gamma_tilde, omega, omega_tilde = transform_32comp_vector_to_matrices(v)
 
+    # Gamma and gamma_tilde have trivial derivatives
+    d_gamma, d_gamma_tilde = omega, omega_tilde
 
+    # The identity matrix
+    I = np.identity(2)
 
-#Exercise 2d)  
+    # Find N and N_tilde
+    N_inv = I - np.matmul(gamma, gamma_tilde)
+    N = np.linalg.inv(N_inv)
 
-import jax
-from jax import grad 
+    N_tilde_inv = I - np.matmul(gamma_tilde, gamma)
+    N_tilde = np.linalg.inv(N_tilde_inv)
 
-def derivative_of_vector_func(v: list ,epsilon: float):
+    # Multiply necessary matrices
+    product1 = np.matmul(omega, N_tilde)
+    product2 = np.matmul(gamma_tilde, omega)
+    product3 = np.matmul(omega_tilde, N)
+    product4 = np.matmul(gamma, omega_tilde)
+
+    # The derivatives of omega and omega_tilde
+    d_omega = -2j*(epsilon + 0.01j)*gamma - 2*np.matmul(product1, product2)
+    d_omega_tilde = -2j*(epsilon + 0.01j)*gamma_tilde - 2*np.matmul(product3, product4)
+
+    dv = transform_matrices_to_32comp_vector(d_gamma, d_gamma_tilde, d_omega, d_omega_tilde)
+
+    return dv
+
+# Exercise 2f
+def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R):
+    '''
+    The boundary conditions for the system.
+    '''
+    gamma_0, gamma_tilde_0, omega_0, omega_tilde_0 = transform_32comp_vector_to_matrices(v_left)
+    gamma_1, gamma_tilde_1, omega_1, omega_tilde_1 = transform_32comp_vector_to_matrices(v_right)
+
+    # The identity matrix
+    I = np.identity(2)
+
+    # Find N and N_tilde for each interface metal L and R
+    N_L_inv = I - np.matmul(gamma_L, gamma_tilde_L)
+    N_L = np.linalg.inv(N_L_inv)
+
+    N_tilde_L_inv = I - np.matmul(gamma_tilde_L, gamma_L)
+    N_tilde_L = np.linalg.inv(N_tilde_L_inv)
+
+    N_R_inv = I - np.matmul(gamma_R, gamma_tilde_R)
+    N_R = np.linalg.inv(N_R_inv)
+
+    N_tilde_R_inv = I - np.matmul(gamma_tilde_R, gamma_R)
+    N_tilde_R = np.linalg.inv(N_tilde_R_inv)
+
+    # Define some more matrices
+    M1 = I - np.matmul(gamma_0, gamma_tilde_L)
+    M2 = gamma_L - gamma_0
+
+    M3 = I - np.matmul(gamma_tilde_0, gamma_L)
+    M4 = gamma_tilde_L - gamma_tilde_0
+
+    M5 = I - np.matmul(gamma_1, gamma_tilde_R)
+    M6 = gamma_R - gamma_1
+
+    M7 = I - np.matmul(gamma_tilde_1, gamma_R)
+    M8 = gamma_tilde_R - gamma_tilde_1
+
+    # The boundary conditions
+    bc1 = omega_0 + (1/3)*np.matmul(np.matmul(M1, N_L), M2)
+    bc2 = omega_tilde_0 + (1/3)*np.matmul(np.matmul(M3, N_tilde_L), M4)
+    bc3 = omega_1 - (1/3)*np.matmul(np.matmul(M5, N_R), M6)
+    bc4 = omega_tilde_1 - (1/3)*np.matmul(np.matmul(M7, N_tilde_R), M8)
+
+    # Vectorize
+    res = transform_matrices_to_32comp_vector(omega_0, omega_tilde_0, omega_1, omega_tilde_1)
+
+    return res
+
+def bc_residuals_normal_metal(v_left, v_right):
+    # In this case the ricatti matrices for the interface metals are all zero
+    gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R = np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2))
+
+    # Compute the residuals at the boundaries
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R)
+
+    return res
+
+# Exercise 2e
+def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
     """
-    FUNKSJONEN ER PÅ INGEN MÅTE FERDIG
+    The right hand side of the differential equation
+    Parameters:
+        x: Vector with m components
+        vec: 32 x m matrix that contains the vector v at each position in x
 
-    takes in vector,  and epsilon and returns 
-    the derivative of v with respects to x
+    Returns:
+        a 32 x m matrix that contains d/dx(v) at each position in x
     """
-    der = []
-    for i in range(len(v)):
-        der += grad(v[i](epsilon))
+    dv_vec = np.zeros_like(vec)
+
+    for i in range(vec.shape[1]): #iterate through each column of vec
+        dv_vec[:, i] = dv(vec[:, i], epsilon) 
+
+    return np.array(dv_vec)
+
+# Exercise 2g
+from scipy.integrate import solve_bvp
+
+m = 101
+x = np.linspace(0, 1, m)
+y = np.zeros((32, m))
+epsilon_list = [0,1,2]
+
+sol_list = []
+for epsilon in epsilon_list:
+  # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
+  solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), bc_residuals_normal_metal, x, y)
+  sol_list.append((solution.x, solution.y))
+
+x_0, y_0 = sol_list[0]
+x_1, y_1 = sol_list[1]
+x_2, y_2 = sol_list[2]
+print(y_0)
+print(y_1)
+print(y_2)
