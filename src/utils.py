@@ -10,4 +10,4 @@ def calculate_Ns(gamma, gamma_tilde):
     N_tilde_inv = I - np.matmul(gamma_tilde, gamma)
     N_tilde = np.linalg.inv(N_tilde_inv)
 
-    return N_tilde_inv, N_tilde
+    return N, N_tilde

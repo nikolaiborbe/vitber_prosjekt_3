@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from utils import (
     calculate_Ns
 )
@@ -73,7 +74,7 @@ def transform_matrices_to_32comp_vector(gamma, gamma_tilde, omega, omega_tilde):
 
 def transform_32comp_vector_to_matrices(v):
     """
-    Transforming a 32-component real vector v back into four unknown 2x2 complex matrices.
+    Transforms a 32-component real vector v into four 2x2 complex matrices.
     """
     # Transforming the 32-component vector back to four 8-component vectors
     m_gamma, m_gamma_tilde, m_omega, m_omega_tilde = transform_32comp_vector_to_four_8comp_vectors(v)
@@ -164,7 +165,7 @@ def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_
     bc4 = omega_tilde_1 - (1/3)*np.matmul(np.matmul(M7, N_tilde_R), M8)
 
     # Vectorize
-    res = transform_matrices_to_32comp_vector(omega_0, omega_tilde_0, omega_1, omega_tilde_1)
+    res = transform_matrices_to_32comp_vector(bc1, bc2, bc3, bc4)
 
     return res
 
@@ -195,6 +196,7 @@ def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
 
     return np.array(dv_vec)
 
+
 # Exercise 2g
 from scipy.integrate import solve_bvp
 
@@ -209,9 +211,64 @@ for epsilon in epsilon_list:
   solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), bc_residuals_normal_metal, x, y)
   sol_list.append((solution.x, solution.y))
 
-x_0, y_0 = sol_list[0]
-x_1, y_1 = sol_list[1]
-x_2, y_2 = sol_list[2]
-print(y_0)
-print(y_1)
-print(y_2)
+# Exercise 2h
+def green_function(gamma:np.ndarray, gamma_tilde:np.ndarray):
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+    I = np.identity(2)
+
+    g11 = 2*N - I
+    g12 = 2*np.matmul(N, gamma)
+    g21 = -2*np.matmul(N_tilde, gamma_tilde)
+    g22 = -2*N_tilde + I
+
+    g = np.block([[g11,g12],[g21,g22]])
+
+    return g
+
+def density_of_states(g:np.ndarray)->float:
+    '''
+    Computes the normalized density of stated
+    Parameters:
+        The green function
+    '''
+    rho_hat = np.diag([1,1,-1,-1])
+    product = np.matmul(rho_hat, g)
+    trace = np.trace(product)
+
+    D = np.real(trace)/4
+
+    return D
+
+def from_solution_to_density_of_states(x:np.ndarray, y:np.ndarray)->np.ndarray:
+    '''
+    Finds the density of states as a function of position x, given a solution (x,y) from the BVP solver.
+    Parameters:
+        x: The x-array returned form the BVP solver (solution.x)
+        y: The y-array returned form the BVP solver (solution.y)
+    Returns:
+        The density of states for each position along x
+    '''
+    D_array = np.zeros(len(x))
+    for i in range(len(x)):
+        v = y[:,i]
+        gamma, gamma_tilde, omega, omega_tilde = transform_32comp_vector_to_matrices(v)
+        g = green_function(gamma, gamma_tilde)
+        D = density_of_states(g)
+        D_array[i] = D
+
+    return D_array
+
+
+# Plotting
+fig2h, axs2h = plt.subplots(3, 1, sharex='all', sharey='all')
+for i, sol in enumerate(sol_list):
+    x, y = sol
+    D = from_solution_to_density_of_states(x, y)
+    axs2h[i].plot(x, D, label = f'$\\epsilon={i}$')
+    axs2h[i].legend()
+    axs2h[i].grid(axis = 'both')
+
+axs2h[2].set_xlabel('$x/l$', size = 15, loc = 'right')
+axs2h[1].set_ylabel('$\\frac{D}{D_0}$', size = 15, rotation = 'horizontal', labelpad = 50)
+fig2h.suptitle('The normalized density of states as a function of position')
+plt.show()
