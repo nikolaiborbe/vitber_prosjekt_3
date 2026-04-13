@@ -266,7 +266,8 @@ fig2h.suptitle('The normalized density of states as a function of position')
 plt.show()
 '''
 
-def bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l):
+# Exercise 2i
+def bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, l):
     t_plus, t_minus = np.atanh(1/(epsilon+0.01j)), np.atanh(-1/(epsilon+0.01j))
     s_plus, s_minus = np.sinh(t_plus), np.sinh(t_minus)
     c_plus, c_minus = np.cosh(t_plus), np.cosh(t_minus)
