@@ -117,28 +117,20 @@ def dv(v:np.ndarray, epsilon:float)->np.ndarray:
     return dv
 
 # Exercise 2f
-def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R):
+def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l):
     '''
     The boundary conditions for the system.
     '''
     gamma_0, gamma_tilde_0, omega_0, omega_tilde_0 = transform_32comp_vector_to_matrices(v_left)
     gamma_1, gamma_tilde_1, omega_1, omega_tilde_1 = transform_32comp_vector_to_matrices(v_right)
 
-    # The identity matrix
-    I = np.identity(2)
 
     # Find N and N_tilde for each interface metal L and R
-    N_L_inv = I - np.matmul(gamma_L, gamma_tilde_L)
-    N_L = np.linalg.inv(N_L_inv)
+    N_L, N_tilde_L = calculate_Ns(gamma_L, gamma_tilde_L)
+    N_R, N_tilde_R = calculate_Ns(gamma_R, gamma_tilde_R)
 
-    N_tilde_L_inv = I - np.matmul(gamma_tilde_L, gamma_L)
-    N_tilde_L = np.linalg.inv(N_tilde_L_inv)
-
-    N_R_inv = I - np.matmul(gamma_R, gamma_tilde_R)
-    N_R = np.linalg.inv(N_R_inv)
-
-    N_tilde_R_inv = I - np.matmul(gamma_tilde_R, gamma_R)
-    N_tilde_R = np.linalg.inv(N_tilde_R_inv)
+    # The identity matrix
+    I = np.identity(2)
 
     # Define some more matrices
     M1 = I - np.matmul(gamma_0, gamma_tilde_L)
@@ -154,22 +146,22 @@ def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_
     M8 = gamma_tilde_R - gamma_tilde_1
 
     # The boundary conditions
-    bc1 = omega_0 + (1/3)*np.matmul(np.matmul(M1, N_L), M2)
-    bc2 = omega_tilde_0 + (1/3)*np.matmul(np.matmul(M3, N_tilde_L), M4)
-    bc3 = omega_1 - (1/3)*np.matmul(np.matmul(M5, N_R), M6)
-    bc4 = omega_tilde_1 - (1/3)*np.matmul(np.matmul(M7, N_tilde_R), M8)
+    bc1 = omega_0 + (1/(3*l)) * M1 @ N_L @ M2
+    bc2 = omega_tilde_0 + (1/(3*l)) * M3 @ N_tilde_L @ M4
+    bc3 = omega_1 - (1/(3*l)) * M5 @ N_R @ M6
+    bc4 = omega_tilde_1 - (1/(3*l)) * M7 @ N_tilde_R @ M8
 
     # Vectorize
-    res = transform_matrices_to_32comp_vector(omega_0, omega_tilde_0, omega_1, omega_tilde_1)
+    res = transform_matrices_to_32comp_vector(bc1, bc2, bc3, bc4)
 
     return res
 
-def bc_residuals_normal_metal(v_left, v_right):
+def bc_residuals_normal_metal(v_left, v_right, l):
     # In this case the ricatti matrices for the interface metals are all zero
     gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R = np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2))
 
     # Compute the residuals at the boundaries
-    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R)
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l)
 
     return res
 
@@ -198,9 +190,10 @@ m = 101
 x = np.linspace(0, 1, m)
 y = np.zeros((32, m))
 epsilon_list = [0,1,2]
+l = 1
 
 
-
+"""
 sol_list = []
 for epsilon in epsilon_list:
   # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
@@ -213,7 +206,7 @@ x_2, y_2 = sol_list[2]
 print(y_0)
 print(y_1)
 print(y_2)
-
+"""
 #Exercise 2h
 
 def green_function(gamma:np.ndarray, gamma_tilde:np.ndarray):
@@ -262,11 +255,39 @@ def from_solution_to_density_of_states(x:np.ndarray, y:np.ndarray)->np.ndarray:
 
     return D_array
 
+#Exercise 2i
+
+def bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l):
+    t_plus, t_minus = np.atanh(1/(epsilon+0.01j)), np.atanh(-1/(epsilon+0.01j))
+    s_plus, s_minus = np.sinh(t_plus), np.sinh(t_minus)
+    c_plus, c_minus = np.cosh(t_plus), np.cosh(t_minus)
+
+    a = s_plus/(1+c_plus)
+    b = s_minus/(1+c_minus)
+
+    gamma_L = np.array([[0,a],[b,0]]) * np.exp(phi_L*1j)
+    gamma_tilde_L = np.array([[0,b],[a,0]]) * np.exp(-phi_L*1j)
+
+    gamma_R = np.array([[0,a],[b,0]]) * np.exp(phi_R*1j)
+    gamma_tilde_R = np.array([[0,b],[a,0]]) * np.exp(-phi_R*1j)
+
+    # Compute the residuals at the boundaries
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R,l)
+
+    return res
+
 #Exercise 2j
 
 m = 101
 epsilon = 2
 x = np.linspace(0,1,m)
 y = np.zeros((32,m))
+l = 1
 
-solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), boundary condition, x, y)
+phi_L, phi_R = 0, 0
+
+solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l), x, y)
+x_sol, y_sol = solution.x, solution.y 
+
+
+print("Oppgave 2j:",y_sol)
