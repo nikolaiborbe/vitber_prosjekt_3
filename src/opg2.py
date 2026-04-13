@@ -285,3 +285,24 @@ def bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, l):
     res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l)
 
     return res
+
+# Exercise 2j
+m = 101
+epsilon = 2
+x = np.linspace(0,1,m)
+y = np.zeros((32,m))
+l = 1
+phi_L, phi_R = 0, 0
+
+solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l), x, y)
+x_sol, y_sol = solution.x, solution.y 
+
+D = from_solution_to_density_of_states(x_sol, y_sol)
+plt.plot(x_sol, D, label = f'$\\epsilon={epsilon}$', linewidth = 1.3)
+plt.legend(fontsize = 12)
+plt.grid(axis = 'both')
+
+plt.xlabel('$x/l$', size = 15)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.title('The normalized density of states as a function of position')
+plt.show()
