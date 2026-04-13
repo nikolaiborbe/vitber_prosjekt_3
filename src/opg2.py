@@ -264,11 +264,11 @@ fig2h, axs2h = plt.subplots(3, 1, sharex='all', sharey='all')
 for i, sol in enumerate(sol_list):
     x, y = sol
     D = from_solution_to_density_of_states(x, y)
-    axs2h[i].plot(x, D, label = f'$\\epsilon={i}$')
-    axs2h[i].legend()
+    axs2h[i].plot(x, D, label = f'$\\epsilon={i}$', linewidth = 1.3)
+    axs2h[i].legend(fontsize = 12)
     axs2h[i].grid(axis = 'both')
 
-axs2h[2].set_xlabel('$x/l$', size = 15, loc = 'right')
-axs2h[1].set_ylabel('$\\frac{D}{D_0}$', size = 15, rotation = 'horizontal', labelpad = 50)
+axs2h[2].set_xlabel('$x/l$', size = 15)
+axs2h[1].set_ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
 fig2h.suptitle('The normalized density of states as a function of position')
 plt.show()
