@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # Oppgave 2 a)
@@ -84,6 +85,22 @@ def transform_32comp_vector_to_matrices(v):
     return gamma, gamma_tilde, omega, omega_tilde
 
 # Exercise 2d
+
+def calculate_Ns(gamma, gamma_tilde):
+    """
+    Helper function to calculate the matricies N and Ñ.
+    """
+    I = np.identity(2)
+
+    # Find N and N_tilde
+    N_inv = I - np.matmul(gamma, gamma_tilde)
+    N = np.linalg.inv(N_inv)
+
+    N_tilde_inv = I - np.matmul(gamma_tilde, gamma)
+    N_tilde = np.linalg.inv(N_tilde_inv)
+
+    return N, N_tilde
+
 def dv(v:np.ndarray, epsilon:float)->np.ndarray:
     '''
     Computes the derivative of the 32 component vector v wrt. x.
@@ -120,21 +137,232 @@ def dv(v:np.ndarray, epsilon:float)->np.ndarray:
 
 
 # Exercise 2 e)
-epsilon = 0.01
 
-# function fun, that will be a input in solve_bvp
-def fun(x: np.ndarray, vec: np.ndarray) -> np.ndarray:
+def h(x: np.ndarray, vec: np.ndarray, epsilon:float=1) -> np.ndarray:
     """
-    x: Vector with m components
-    vec: 32 x m matrix, that conatains the vector v at each position on x
+    The right hand side of the differential equation
+    Parameters:
+        x: Vector with m components
+        vec: 32 x m matrix that contains the vector v at each position in x
 
-    the function returns a 32 x m matrix that contains d/dx(v) at each position on x
+    Returns:
+        a 32 x m matrix that contains d/dx(v) at each position in x
     """
     dv_vec = np.zeros_like(vec)
 
     for i in range(vec.shape[1]): #iterate through each column of vec
-        dv_vec[:, i] = dv(vec[:, i], epsilon) 
+        dv_vec[:, i] = dv(vec[:, i], epsilon)
 
     return np.array(dv_vec)
 
     
+
+# Exercise 2f
+def boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l):
+    '''
+    The boundary conditions for the system.
+    '''
+    gamma_0, gamma_tilde_0, omega_0, omega_tilde_0 = transform_32comp_vector_to_matrices(v_left)
+    gamma_1, gamma_tilde_1, omega_1, omega_tilde_1 = transform_32comp_vector_to_matrices(v_right)
+
+
+    # Find N and N_tilde for each interface metal L and R
+    N_L, N_tilde_L = calculate_Ns(gamma_L, gamma_tilde_L)
+    N_R, N_tilde_R = calculate_Ns(gamma_R, gamma_tilde_R)
+
+    # The identity matrix
+    I = np.identity(2)
+
+    # Define some more matrices
+    M1 = I - np.matmul(gamma_0, gamma_tilde_L)
+    M2 = gamma_L - gamma_0
+
+    M3 = I - np.matmul(gamma_tilde_0, gamma_L)
+    M4 = gamma_tilde_L - gamma_tilde_0
+
+    M5 = I - np.matmul(gamma_1, gamma_tilde_R)
+    M6 = gamma_R - gamma_1
+
+    M7 = I - np.matmul(gamma_tilde_1, gamma_R)
+    M8 = gamma_tilde_R - gamma_tilde_1
+
+    # The boundary conditions
+    bc1 = omega_0 + (1/(3*l)) * M1 @ N_L @ M2
+    bc2 = omega_tilde_0 + (1/(3*l)) * M3 @ N_tilde_L @ M4
+    bc3 = omega_1 - (1/(3*l)) * M5 @ N_R @ M6
+    bc4 = omega_tilde_1 - (1/(3*l)) * M7 @ N_tilde_R @ M8
+
+    # Vectorize
+    res = transform_matrices_to_32comp_vector(bc1, bc2, bc3, bc4)
+
+    return res
+
+def bc_residuals_normal_metal(v_left, v_right, l):
+    # In this case the ricatti matrices for the interface metals are all zero
+    gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R = np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2)), np.zeros((2,2))
+
+    # Compute the residuals at the boundaries
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l)
+
+    return res
+
+
+# Exercise 2g
+from scipy.integrate import solve_bvp
+'''
+m = 101
+x = np.linspace(0, 1, m)
+y = np.zeros((32, m))
+epsilon_list = [0,1,2]
+
+sol_list = []
+for epsilon in epsilon_list:
+  # Use lambda to remove epsilon as a parameter, such that h works along with the BVP solver
+  solution = solve_bvp(lambda x, vec: h(x, vec, epsilon = epsilon), lambda x, y: bc_residuals_normal_metal(x, y, l), x, y)
+  sol_list.append((solution.x, solution.y))
+'''
+# Exercise 2h
+def green_function(gamma:np.ndarray, gamma_tilde:np.ndarray):
+    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
+    I = np.identity(2)
+
+    g11 = 2*N - I
+    g12 = 2*np.matmul(N, gamma)
+    g21 = -2*np.matmul(N_tilde, gamma_tilde)
+    g22 = -2*N_tilde + I
+
+    g = np.block([[g11,g12],[g21,g22]])
+
+    return g
+
+def density_of_states(g:np.ndarray)->float:
+    '''
+    Computes the normalized density of stated
+    Parameters:
+        The green function
+    '''
+    rho_hat = np.diag([1,1,-1,-1])
+    product = np.matmul(rho_hat, g)
+    trace = np.trace(product)
+
+    D = np.real(trace)/4
+
+    return D
+
+def from_solution_to_density_of_states(x:np.ndarray, y:np.ndarray)->np.ndarray:
+    '''
+    Finds the density of states as a function of position x, given a solution (x,y) from the BVP solver.
+    Parameters:
+        x: The x-array returned form the BVP solver (solution.x)
+        y: The y-array returned form the BVP solver (solution.y)
+    Returns:
+        The density of states for each position along x
+    '''
+    D_array = np.zeros(len(x))
+    for i in range(len(x)):
+        v = y[:,i]
+        gamma, gamma_tilde, omega, omega_tilde = transform_32comp_vector_to_matrices(v)
+        g = green_function(gamma, gamma_tilde)
+        D = density_of_states(g)
+        D_array[i] = D
+
+    return D_array
+
+'''
+# Plotting
+fig2h, axs2h = plt.subplots(3, 1, sharex='all', sharey='all')
+for i, sol in enumerate(sol_list):
+    x, y = sol
+    D = from_solution_to_density_of_states(x, y)
+    axs2h[i].plot(x, D, label = f'$\\epsilon={i}$', linewidth = 1.3)
+    axs2h[i].legend(fontsize = 12)
+    axs2h[i].grid(axis = 'both')
+
+axs2h[2].set_xlabel('$x/l$', size = 15)
+axs2h[1].set_ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+fig2h.suptitle('The normalized density of states as a function of position')
+plt.show()
+'''
+
+# Exercise 2i
+
+def bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l):
+    t_plus, t_minus = np.atanh(1/(epsilon+0.01j)), np.atanh(-1/(epsilon+0.01j))
+    s_plus, s_minus = np.sinh(t_plus), np.sinh(t_minus)
+    c_plus, c_minus = np.cosh(t_plus), np.cosh(t_minus)
+
+    a = s_plus/(1+c_plus)
+    b = s_minus/(1+c_minus)
+
+    gamma_L = np.array([[0,a],[b,0]]) * np.exp(phi_L*1j)
+    gamma_tilde_L = np.array([[0,b],[a,0]]) * np.exp(-phi_L*1j)
+
+    gamma_R = np.array([[0,a],[b,0]]) * np.exp(phi_R*1j)
+    gamma_tilde_R = np.array([[0,b],[a,0]]) * np.exp(-phi_R*1j)
+
+    # Compute the residuals at the boundaries
+    res = boundary_conditions(v_left, v_right, gamma_L, gamma_tilde_L, gamma_R, gamma_tilde_R, l)
+
+    return res
+
+# Exercise 2j
+
+m = 101
+epsilon = 2
+x = np.linspace(0,1,m)
+y = np.zeros((32,m))
+l = 1
+
+phi_L, phi_R = 0, 0
+
+solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l), x, y)
+x_sol, y_sol = solution.x, solution.y
+
+"""
+print("Oppgave 2j:",y_sol)
+
+x, y = x_sol, y_sol
+D = from_solution_to_density_of_states(x, y)
+
+plt.plot(x, D, label = f'$\\epsilon={epsilon}$', linewidth = 1.3)
+plt.legend(fontsize = 12)
+plt.grid(axis = 'both')
+
+plt.xlabel('$x/l$', size = 15)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.title('The normalized density of states as a function of position')
+plt.show()
+"""
+
+
+# Exercise 2k
+m = 101
+epsilons = np.linspace(0, 2, 101)
+l = [0.5, 1, 2]
+
+phi_L, phi_R = 0, 0
+
+for L in l:
+    x = np.linspace(0, L, m)
+    y = np.zeros((32, m))
+
+    D_energy = np.zeros((len(epsilons)))
+
+    for j in range(len(epsilons)):
+        epsilon = epsilons[j]
+        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, L), x, y)
+        x_sol, y_sol = solution.x, solution.y
+        D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))] # Take the density of states at the middle of the normal metal
+        y = y_sol # Use the solution as the initial guess for the next epsilion
+
+    plt.plot(epsilons, D_energy, label = f'$l={L}$', linewidth = 1.3)
+
+plt.legend(fontsize = 12)
+plt.grid(axis = 'both')
+plt.xlabel('$\\epsilon$', size = 15)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.title('The normalized density of states as a function of energy')
+plt.show()
+
+
+
