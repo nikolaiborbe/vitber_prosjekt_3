@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import tqdm
 from utils import (
     calculate_Ns
 )
@@ -309,3 +310,31 @@ plt.title('The normalized density of states as a function of position')
 plt.show()
 '''
 
+# Exercise 2k
+m = 101
+epsilons = np.linspace(0, 2, 101)
+l = [0.5, 1, 2]
+
+phi_L, phi_R = 0, 0
+
+for L in l:
+    x = np.linspace(0, L, m)
+    y = np.zeros((32, m))
+
+    D_energy = np.zeros((len(epsilons)))
+
+    for j in tqdm.trange(len(epsilons)):
+        epsilon = epsilons[j]
+        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
+        x_sol, y_sol = solution.x, solution.y
+        D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))] # Take the density of states at the middle of the normal metal
+        y = y_sol # Use the solution as the initial guess for the next epsilon
+
+    plt.plot(epsilons, D_energy, label = f'$l={L}$', linewidth = 1.3)
+
+plt.legend(fontsize = 12)
+plt.grid(axis = 'both')
+plt.xlabel('$\\epsilon$', size = 15)
+plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
+plt.title('The normalized density of states as a function of energy')
+plt.show()
