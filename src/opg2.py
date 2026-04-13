@@ -297,16 +297,12 @@ epsilon = 2
 x = np.linspace(0,1,m)
 y = np.zeros((32,m))
 l = 1
-
 phi_L, phi_R = 0, 0
 
 solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, epsilon, phi_L, phi_R, l), x, y)
 x_sol, y_sol = solution.x, solution.y 
-
-
-print("Oppgave 2j:",y_sol)
-
 x, y = x_sol, y_sol
+
 D = from_solution_to_density_of_states(x, y)
 plt.plot(x, D, label = f'$\\epsilon={epsilon}$', linewidth = 1.3)
 plt.legend(fontsize = 12)
