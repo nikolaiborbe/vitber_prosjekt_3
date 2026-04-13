@@ -287,6 +287,7 @@ def bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, l):
     return res
 
 # Exercise 2j
+'''
 m = 101
 epsilon = 2
 x = np.linspace(0,1,m)
@@ -306,3 +307,5 @@ plt.xlabel('$x/l$', size = 15)
 plt.ylabel('$\\frac{D}{D_0}$', size = 18, rotation = 'horizontal', labelpad = 25)
 plt.title('The normalized density of states as a function of position')
 plt.show()
+'''
+
