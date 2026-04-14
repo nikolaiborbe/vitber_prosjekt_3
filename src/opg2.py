@@ -454,3 +454,28 @@ def from_solution_to_current_integrand(x:np.ndarray, y:np.ndarray)->np.ndarray:
         j_array[i] = j
 
     return j_array
+
+'''
+epsilon_list = [2.0, 1.5, 1, 0.5, 0.0]
+epsilons = np.linspace(0, 2, 51) # The epsilon values for which we have stored solutions, 
+                                 # corresponds to the array in exercise 2k
+
+for eps in epsilon_list:
+    # Find the element in epsilons closest to the element eps
+    index = np.argmin(np.abs(epsilons-eps))
+    epsilon = epsilons[index]
+
+    label = f'(l, epsilon) = ({1}, {epsilon})'
+    x, y = solution_dict[label]
+    j = from_solution_to_current_integrand(x, y)
+
+    plt.plot(x, j, label = f'$\\epsilon={epsilon}$', linewidth = 1.2)
+
+plt.legend(fontsize = 12)
+plt.grid('both')
+plt.xlabel('$\\epsilon$', size = 12)
+plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 8)
+plt.title('The current integrand as a function of position')
+plt.show()
+'''
+
