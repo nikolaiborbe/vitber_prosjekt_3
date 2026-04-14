@@ -494,6 +494,21 @@ for i in tqdm.trange(len(epsilons)):
     label = f'(l, epsilon) = ({l}, {epsilon})'
     solution_dict_2m[label] = (x_sol, y_sol)
 
+# Plotting
+j_array = np.zeros((len(epsilons)))
+for i, epsilon in enumerate(epsilons):
+    label = f'(l, epsilon)=({l}, {epsilon})'
+    x, y = solution_dict_2m[label]
+
+    # Take the solution in the middle of the normal metal
+    j_array[i] = from_solution_to_current_integrand(x, y)[np.argmin(np.abs(x - l/2))]
+
+plt.plot(epsilons, j_array)
+plt.grid(axis = 'both')
+plt.xlabel('$\\epsilon$', size = 12)
+plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
+plt.title('The current integrand as a function of energy')
+plt.show()
 
 '''
 j_array = np.zeros((len(epsilons)))
