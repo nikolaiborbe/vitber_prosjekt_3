@@ -475,7 +475,7 @@ plt.show()
 '''
 
 # Exercise 2m
-
+'''
 m = 101
 epsilons = np.linspace(0, 2, 101)
 l = 1
@@ -509,8 +509,17 @@ plt.xlabel('$\\epsilon$', size = 12)
 plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
 plt.title('The current integrand as a function of energy')
 plt.show()
-
 '''
+
+# OLD 2m
+'''
+m = 101
+epsilons = np.linspace(0, 2, 101)
+l = 1
+phi_L, phi_R = 1, 0
+x = np.linspace(0, l, m)
+y = np.zeros((32, m))
+
 j_array = np.zeros((len(epsilons)))
 for i in tqdm.trange(len(epsilons)):
     epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
@@ -527,3 +536,4 @@ plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
 plt.title('The current integrand as a function of energy')
 plt.show()
 '''
+
