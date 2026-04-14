@@ -318,22 +318,20 @@ l = [0.5, 1, 1.5]
 
 phi_L, phi_R = 0, 0
 
-solution_dict = {} # Dictionary for storing solutions
+solution_dict_2k = {} # Dictionary for storing solutions
 for L in l:
     x = np.linspace(0, L, m)
     y = np.zeros((32, m))
 
-    D_energy = np.zeros((len(epsilons)))
     for j in tqdm.trange(len(epsilons)):
         epsilon = np.flip(epsilons)[j] # Flip the array to start at epsilon=2
         solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
         x_sol, y_sol = solution.x, solution.y
-        D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))] # Take the density of states at the middle of the normal metal
         x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
 
         # Store the solution
         label = f'(l, epsilon) = ({L}, {epsilon})'
-        solution_dict[label] = (x_sol, y_sol)
+        solution_dict_2k[label] = (x_sol, y_sol)
 
 # Plotting
 for L in l:
@@ -342,7 +340,7 @@ for L in l:
         epsilon = epsilons[j]
         label = f'(l, epsilon) = ({L}, {epsilon})'
 
-        x_sol, y_sol = solution_dict[label]
+        x_sol, y_sol = solution_dict_2k[label]
 
         # Find the density of states in the middle of the normal metal
         D_energy[j] = from_solution_to_density_of_states(x_sol, y_sol)[np.argmin(np.abs(x_sol - L/2))]
@@ -463,7 +461,7 @@ for eps in epsilon_list:
     epsilon = epsilons[index]
 
     label = f'(l, epsilon) = ({1}, {epsilon})'
-    x, y = solution_dict[label]
+    x, y = solution_dict_2k[label]
     j = from_solution_to_current_integrand(x, y)
 
     plt.plot(x, j, label = f'$\\epsilon={epsilon}$', linewidth = 1.2)
@@ -485,6 +483,19 @@ phi_L, phi_R = 1, 0
 x = np.linspace(0, l, m)
 y = np.zeros((32, m))
 
+solution_dict_2m = {}
+for i in tqdm.trange(len(epsilons)):
+    epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
+    solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
+    x_sol, y_sol = solution.x, solution.y
+    x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
+
+    # Store the solution
+    label = f'(l, epsilon) = ({l}, {epsilon})'
+    solution_dict_2m[label] = (x_sol, y_sol)
+
+
+'''
 j_array = np.zeros((len(epsilons)))
 for i in tqdm.trange(len(epsilons)):
     epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
@@ -500,3 +511,4 @@ plt.xlabel('$\\epsilon$', size = 12)
 plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
 plt.title('The current integrand as a function of energy')
 plt.show()
+'''
