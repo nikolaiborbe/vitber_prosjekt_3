@@ -494,7 +494,7 @@ for i in tqdm.trange(len(epsilons)):
     x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
 
 
-plt.plot(epsilons, j_array, linewidth = 1.3)
+plt.plot(epsilons, np.flip(j_array))
 plt.grid(axis = 'both')
 plt.xlabel('$\\epsilon$', size = 12)
 plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
