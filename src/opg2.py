@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_bvp
+from scipy.integrate import solve_bvp, simpson
 import tqdm
 from utils import (
     calculate_Ns
@@ -314,7 +314,7 @@ plt.show()
 '''
 m = 101
 epsilons = np.linspace(0, 2, 101)
-l = [0.5, 1, 1.5]
+l = [1]
 
 phi_L, phi_R = 0, 0
 
@@ -325,7 +325,7 @@ for L in l:
 
     for j in tqdm.trange(len(epsilons)):
         epsilon = np.flip(epsilons)[j] # Flip the array to start at epsilon=2
-        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
+        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y, tol = 1e-9)
         x_sol, y_sol = solution.x, solution.y
         x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
 
@@ -357,7 +357,7 @@ plt.show()
 '''
 
 # OLD 2k
-'''
+"""
 m = 101
 epsilons = np.linspace(0, 2, 101)
 l = [0.5, 1, 2]
@@ -384,7 +384,7 @@ plt.xlabel('$\\epsilon$', size = 12)
 plt.ylabel('$\\frac{D}{D_0}$', size = 15, rotation = 'horizontal', labelpad = 10)
 plt.title('The normalized density of states as a function of energy')
 plt.show()
-'''
+"""
 
 # Exercise 2l
 def differentiate_Ns(gamma, gamma_tilde, omega, omega_tilde):
@@ -452,7 +452,7 @@ def from_solution_to_current_integrand(x:np.ndarray, y:np.ndarray)->np.ndarray:
 
 '''
 epsilon_list = [2.0, 1.5, 1, 0.5, 0.0]
-epsilons = np.linspace(0, 2, 51) # The epsilon values for which we have stored solutions, 
+epsilons = np.linspace(0, 2, 101) # The epsilon values for which we have stored solutions, 
                                  # corresponds to the array in exercise 2k
 
 for eps in epsilon_list:
@@ -467,47 +467,10 @@ for eps in epsilon_list:
     plt.plot(x, j, label = f'$\\epsilon={epsilon}$', linewidth = 1.2)
 
 plt.legend(fontsize = 12)
-plt.grid('both')
-plt.xlabel('$\\epsilon$', size = 12)
+plt.grid(which = 'both')
+plt.xlabel('$x/l$', size = 12)
 plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 8)
 plt.title('The current integrand as a function of position')
-plt.show()
-'''
-
-# Exercise 2m
-'''
-m = 101
-epsilons = np.linspace(0, 2, 101)
-l = 1
-phi_L, phi_R = 1, 0
-x = np.linspace(0, l, m)
-y = np.zeros((32, m))
-
-solution_dict_2m = {}
-for i in tqdm.trange(len(epsilons)):
-    epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
-    solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
-    x_sol, y_sol = solution.x, solution.y
-    x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
-
-    # Store the solution
-    label = f'(l, epsilon) = ({l}, {epsilon})'
-    solution_dict_2m[label] = (x_sol, y_sol)
-
-# Plotting
-j_array = np.zeros((len(epsilons)))
-for i, epsilon in enumerate(epsilons):
-    label = f'(l, epsilon)=({l}, {epsilon})'
-    x, y = solution_dict_2m[label]
-
-    # Take the solution in the middle of the normal metal
-    j_array[i] = from_solution_to_current_integrand(x, y)[np.argmin(np.abs(x - l/2))]
-
-plt.plot(epsilons, j_array)
-plt.grid(axis = 'both')
-plt.xlabel('$\\epsilon$', size = 12)
-plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
-plt.title('The current integrand as a function of energy')
 plt.show()
 '''
 
@@ -537,3 +500,113 @@ plt.title('The current integrand as a function of energy')
 plt.show()
 '''
 
+# Exercise 2m
+'''
+m = 101
+epsilons = np.linspace(0, 2, 101)
+l = 1
+phi_L, phi_R = 1, 0
+x = np.linspace(0, l, m)
+y = np.zeros((32, m))
+
+solution_dict_2m = {}
+for i in tqdm.trange(len(epsilons)):
+    epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
+    solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, L), x, y)
+    x_sol, y_sol = solution.x, solution.y
+    x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
+
+    # Store the solution
+    label = f'(l, epsilon) = ({l}, {epsilon})'
+    solution_dict_2m[label] = (x_sol, y_sol)
+'''
+'''
+# Plotting
+j_array = np.zeros((len(epsilons)))
+for i, epsilon in enumerate(epsilons):
+    label = f'(l, epsilon)=({l}, {epsilon})'
+    x, y = solution_dict_2m[label]
+
+    # Take the solution in the middle of the normal metal
+    j_array[i] = from_solution_to_current_integrand(x, y)[np.argmin(np.abs(x - l/2))]
+
+plt.plot(epsilons, j_array)
+plt.grid(axis = 'both')
+plt.xlabel('$\\epsilon$', size = 12)
+plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
+plt.title('The current integrand as a function of energy')
+plt.show()
+'''
+'''
+# Plotting to see if the current is x-dependent
+# Plotting to see if the current is x-dependent
+epsilon_list = [2.0, 1.5, 1, 0.5, 0.0]
+epsilons = np.linspace(0, 2, 101) # The epsilon values for which we have stored solutions,
+                                  # corresponds to the array in exercise 2m
+
+for eps in epsilon_list:
+    # Find the element in epsilons closest to the element eps
+    index = np.argmin(np.abs(epsilons-eps))
+    epsilon = epsilons[index]
+
+    label = f'(l, epsilon) = ({1}, {epsilon})'
+    x, y = solution_dict_2m[label]
+    j = from_solution_to_current_integrand(x, y)
+
+    plt.plot(x, j, label = f'$\\epsilon={epsilon}$', linewidth = 1.2)
+
+plt.legend(fontsize = 12)
+plt.grid('both')
+plt.xlabel('$x/l$', size = 12)
+plt.ylabel('$j$', size = 12, rotation = 'horizontal', labelpad = 10)
+plt.title('The current integrand as a function of position')
+plt.show()
+'''
+
+# Exercise 2n
+
+m = 101
+l = 1
+epsilons = np.linspace(0, 2, 101)
+x = np.linspace(0, l, m)
+y = np.zeros((32, m))
+
+phi_step = np.pi
+phi_L_list = np.arange(0, 2*np.pi + phi_step, phi_step)
+phi_R = 0
+
+solution_dict_2n = {} # Dictionary for storing solutions
+for phi_L in phi_L_list:
+    for i in tqdm.trange(len(epsilons)):
+        epsilon = np.flip(epsilons)[i] # Flip the array to start at epsilon=2
+        solution = solve_bvp(lambda x,vec: h(x,vec,epsilon), lambda v_left, v_right: bc_residuals_superconductors(v_left, v_right, phi_L, phi_R, epsilon, l), x, y)
+        x_sol, y_sol = solution.x, solution.y
+
+        # Store the solution
+        label = f'(l, epsilon, phase_diff) = ({l}, {epsilon}, {phi_L})'
+        solution_dict_2n[label] = (x_sol, y_sol)
+
+        x, y = x_sol, y_sol # Use the solution as the initial guess for the next epsilon
+
+supercurrent_function_of_phase_diff = np.zeros(len(phi_L_list))
+for n, phi_L in enumerate(phi_L_list):
+    j_array = np.zeros(len(epsilons))
+    for i, epsilon in enumerate(epsilons):
+        label = f'(l, epsilon, phase_diff) = ({l}, {epsilon}, {phi_L})'
+        x, y = solution_dict_2n[label]
+
+        # We find the current integrand at x=l/2. Since the integrand is conserved over x, the choice of x is unimportant.
+        middle = np.argmin(np.abs(x - l/2))
+        j_array[i] = from_solution_to_current_integrand(x, y)[middle]
+
+    # Integrate over epsilon=0 to 2 to find the supercurrent at x = l/2.
+    supercurrent = -simpson(j_array, epsilons)
+    supercurrent_function_of_phase_diff[n] = supercurrent
+
+plt.plot(phi_L_list, supercurrent_function_of_phase_diff)
+plt.ylabel('$I/I_0(l/2)$', size = 12, labelpad = 10, rotation = 'horizontal')
+plt.xlabel('$\\Delta \\phi$', size = 12)
+ticks = np.arange(0, 2*np.pi + np.pi/4, np.pi/4)
+labels = [f'{num/np.pi}pi' for num in ticks]
+plt.xticks(ticks, labels)
+plt.title('Normalized supercurrent as a function of phase difference')
