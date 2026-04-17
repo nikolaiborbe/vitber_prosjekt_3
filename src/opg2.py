@@ -416,8 +416,6 @@ def differentiate_green_function(gamma, gamma_tilde, omega, omega_tilde):
     return dg
 
 def current_integrand(gamma, gamma_tilde, omega, omega_tilde):
-    N, N_tilde = calculate_Ns(gamma, gamma_tilde)
-    dN, dN_tilde = differentiate_Ns(gamma, gamma_tilde, omega, omega_tilde)
 
     g = green_function(gamma, gamma_tilde)
     dg = differentiate_green_function(gamma, gamma_tilde, omega, omega_tilde)
@@ -564,7 +562,7 @@ plt.show()
 '''
 
 # Exercise 2n
-
+'''
 m = 101
 l = 1
 epsilons = np.linspace(0, 2, 101)
@@ -610,3 +608,4 @@ ticks = np.arange(0, 2*np.pi + np.pi/4, np.pi/4)
 labels = [f'{num/np.pi}pi' for num in ticks]
 plt.xticks(ticks, labels)
 plt.title('Normalized supercurrent as a function of phase difference')
+'''
